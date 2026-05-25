@@ -1,0 +1,47 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Android / Gradle
+.gradle/
+build/
+app/build/
+app/.cxx/
+local.properties
+
+# Android Studio
+.idea/
+*.iml
+
+# Python
+.venv/
+ai/.venv/
+__pycache__/
+*.pyc
+
+# C++ / Visual Studio
+.vs/
+x64/
+Debug/
+Release/
+*.exe
+*.pdb
+*.ilk
+*.obj
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

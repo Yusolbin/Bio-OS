@@ -1,4 +1,4 @@
-#include "D:\CoreSync\Bio_OS\bio_os_engine\include\logs/SimulationLogger.hpp"
+#include "logs/SimulationLogger.hpp"
 
 #include <iostream>
 

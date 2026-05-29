@@ -12,9 +12,10 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Set;
+import java.util.HashSet;
 
 import java.io.FileOutputStream;
-
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -32,6 +33,7 @@ public class MainActivity extends Activity {
     private TextView aiRecommendationText;
 
     private PlantTreeView plantTreeView;
+    private PlantPixelView plantPixelView;
 
     private final ArrayList<String> tickHistory = new ArrayList<>();
     private final ArrayList<String> csvHistory = new ArrayList<>();
@@ -124,6 +126,23 @@ public class MainActivity extends Activity {
         summaryText = createSection(root, "Summary");
         statesText = createSection(root, "Active States");
         aiRecommendationText = createSection(root, "AI Recommendation");
+
+        TextView pixelVisualTitle = new TextView(this);
+        pixelVisualTitle.setText("\nPlant Pixel View");
+        pixelVisualTitle.setTextSize(18);
+        pixelVisualTitle.setTypeface(null, Typeface.BOLD);
+        pixelVisualTitle.setPadding(0, 18, 0, 8);
+        root.addView(pixelVisualTitle);
+
+        plantPixelView = new PlantPixelView(this);
+        plantPixelView.setPadding(0, 12, 0, 12);
+        root.addView(
+                plantPixelView,
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        620
+                )
+        );
 
         TextView visualTitle = new TextView(this);
         visualTitle.setText("\nPlant Structure View");
@@ -230,32 +249,26 @@ public class MainActivity extends Activity {
             int scenarioType = i % 6;
 
             if (scenarioType == 0) {
-                // Severe drought: Pruning 유도
                 water = randomRange(0.0, 8.0);
                 light = randomRange(70.0, 100.0);
                 temperature = randomRange(30.0, 42.0);
             } else if (scenarioType == 1) {
-                // Dry stress
                 water = randomRange(8.0, 25.0);
                 light = randomRange(50.0, 100.0);
                 temperature = randomRange(25.0, 40.0);
             } else if (scenarioType == 2) {
-                // Recovery / high water
                 water = randomRange(110.0, 160.0);
                 light = randomRange(60.0, 100.0);
                 temperature = randomRange(18.0, 30.0);
             } else if (scenarioType == 3) {
-                // Heat stress
                 water = randomRange(30.0, 90.0);
                 light = randomRange(40.0, 90.0);
                 temperature = randomRange(36.0, 45.0);
             } else if (scenarioType == 4) {
-                // Low light
                 water = randomRange(40.0, 100.0);
                 light = randomRange(0.0, 30.0);
                 temperature = randomRange(15.0, 28.0);
             } else {
-                // Stable condition
                 water = randomRange(60.0, 100.0);
                 light = randomRange(60.0, 85.0);
                 temperature = randomRange(20.0, 30.0);
@@ -346,6 +359,10 @@ public class MainActivity extends Activity {
         tickHistory.clear();
         csvHistory.clear();
 
+        lastWaterInput = 0.0;
+        lastLightInput = 0.0;
+        lastTemperatureInput = 0.0;
+
         updateDashboard();
     }
 
@@ -384,15 +401,15 @@ public class MainActivity extends Activity {
                             "Next Scenario: " + nextScenarioName;
 
             summaryText.setText(summaryResult);
-
-            statesText.setText(parseStates(root));
-            summaryText.setText(summaryResult);
-
             statesText.setText(parseStates(root));
             aiRecommendationText.setText(makeAiRecommendation(summary));
 
-            if (plantTreeView != null) {
-                plantTreeView.updateFromJson(root);
+            if (plantPixelView != null) {
+                plantPixelView.updatePlantState(
+                        extractActiveStateSet(root),
+                        summary.optString("lastAction", "Stable"),
+                        summary.optDouble("totalEnergy", 100.0)
+                );
             }
 
             if (plantTreeView != null) {
@@ -618,6 +635,35 @@ public class MainActivity extends Activity {
         }
 
         return builder.toString();
+    }
+
+    private Set<String> extractActiveStateSet(JSONObject root) {
+        Set<String> result = new HashSet<>();
+
+        JSONObject states = root.optJSONObject("states");
+
+        if (states == null) {
+            return result;
+        }
+
+        JSONArray names = states.names();
+
+        if (names == null) {
+            return result;
+        }
+
+        for (int i = 0; i < names.length(); i++) {
+            String key = names.optString(i);
+            String value = states.optString(key);
+
+            if ("ON".equalsIgnoreCase(value)
+                    || "TRUE".equalsIgnoreCase(value)
+                    || "1".equals(value)) {
+                result.add(key);
+            }
+        }
+
+        return result;
     }
 
     private String parseStates(JSONObject root) {
@@ -859,6 +905,7 @@ public class MainActivity extends Activity {
         engine.addRule("IF Water < 10 THEN PruningMode = ON");
         engine.addRule("IF Water > 100 THEN RecoveryMode = ON");
     }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();

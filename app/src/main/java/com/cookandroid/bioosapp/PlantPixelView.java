@@ -21,6 +21,7 @@ public class PlantPixelView extends View {
     private double totalEnergy = 100.0;
 
     private Bitmap currentBitmap;
+    private String visualStateName = "stable";
 
     public PlantPixelView(Context context) {
         super(context);
@@ -65,29 +66,49 @@ public class PlantPixelView extends View {
 
     private void updateBitmapByState() {
         int resId = R.drawable.stable;
+        visualStateName = "stable";
 
         if (totalEnergy <= 5.0) {
             resId = R.drawable.dead_critical;
+            visualStateName = "dead_critical";
+
+        } else if (activeStates.contains("RecoveryMode")) {
+            resId = R.drawable.recovery_mode;
+            visualStateName = "recovery_mode";
+
+        } else if (activeStates.contains("HeatStress")) {
+            resId = R.drawable.heat_stress;
+            visualStateName = "heat_stress";
+
+        } else if (activeStates.contains("DroughtMode")) {
+            resId = R.drawable.drought_mode;
+            visualStateName = "drought_mode";
+
         } else if (lastAction != null && lastAction.equalsIgnoreCase("PruningAlreadyExecuted")) {
             resId = R.drawable.pruning_already_executed;
+            visualStateName = "pruning_already_executed";
+
         } else if (lastAction != null &&
                 (lastAction.equalsIgnoreCase("Pruning")
                         || lastAction.equalsIgnoreCase("PruningFailed"))) {
             resId = R.drawable.pruned;
-        } else if (totalEnergy < 40.0) {
-            resId = R.drawable.low_energy;
-        } else if (activeStates.contains("RecoveryMode")) {
-            resId = R.drawable.recovery_mode;
-        } else if (activeStates.contains("HeatStress")) {
-            resId = R.drawable.heat_stress;
-        } else if (activeStates.contains("DroughtMode")) {
-            resId = R.drawable.drought_mode;
+            visualStateName = "pruned";
+
         } else if (activeStates.contains("PhotosynthesisBoost")) {
             resId = R.drawable.photosynthesis_boost;
+            visualStateName = "photosynthesis_boost";
+
         } else if (activeStates.contains("ColdStress")) {
             resId = R.drawable.cold_stress;
+            visualStateName = "cold_stress";
+
+        } else if (totalEnergy < 40.0) {
+            resId = R.drawable.low_energy;
+            visualStateName = "low_energy";
+
         } else {
             resId = R.drawable.stable;
+            visualStateName = "stable";
         }
 
         currentBitmap = BitmapFactory.decodeResource(getResources(), resId);
@@ -127,5 +148,15 @@ public class PlantPixelView extends View {
         Rect dst = new Rect(left, top, right, bottom);
 
         canvas.drawBitmap(currentBitmap, src, dst, paint);
+
+        paint.setColor(0xFFE8FFE8);
+        paint.setTextSize(28f);
+        paint.setAntiAlias(false);
+        canvas.drawText(
+                "visual: " + visualStateName,
+                24f,
+                getHeight() - 24f,
+                paint
+        );
     }
 }

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BIO-OS Web Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="app">
+    <header class="hero">
+        <div>
+            <p class="eyebrow">BIO-OS v0.2 Prototype</p>
+            <h1>Algorithmic Bio-System Simulator</h1>
+            <p class="subtitle">
+                C++ 엔진의 생체 상태 데이터를 Web Dashboard와 픽셀아트 식물 시각화로 확장하기 위한 프론트엔드 프로토타입
+            </p>
+        </div>
+    </header>
+
+    <main class="grid">
+        <section class="card control-panel">
+            <h2>Environment Input</h2>
+
+            <label>
+                Water Input
+                <input id="waterInput" type="number" value="15" min="0" max="200" />
+            </label>
+
+            <label>
+                Light
+                <input id="lightInput" type="number" value="80" min="0" max="100" />
+            </label>
+
+            <label>
+                Temperature
+                <input id="temperatureInput" type="number" value="32" min="-10" max="60" />
+            </label>
+
+            <button id="runButton">Run Simulation</button>
+            <button id="randomButton" class="secondary">Run Random Sample</button>
+            <button id="resetButton" class="danger">Reset Logs</button>
+        </section>
+
+        <section class="card rule-panel">
+            <h2>Gene Rule Input</h2>
+
+            <div class="rule-row">
+                <span>IF</span>
+                <select id="ruleField">
+                    <option value="Water">Water</option>
+                    <option value="Light">Light</option>
+                    <option value="Temperature">Temperature</option>
+                </select>
+
+                <select id="ruleOperator">
+                    <option value="<">&lt;</option>
+                    <option value=">">&gt;</option>
+                    <option value="<=">&lt;=</option>
+                    <option value=">=">&gt;=</option>
+                </select>
+
+                <input id="ruleThreshold" type="number" value="30" />
+
+                <span>THEN</span>
+
+                <input id="ruleState" type="text" value="DroughtMode" />
+
+                <span>= ON</span>
+            </div>
+
+            <button id="addRuleButton" class="secondary">Add Rule</button>
+
+            <div class="rule-list">
+                <h3>Active Rules</h3>
+                <ul id="ruleList"></ul>
+            </div>
+        </section>
+
+        <section class="card plant-card">
+            <h2>Plant Pixel View</h2>
+            <div class="plant-stage">
+                <img id="plantImage" src="assets/stable.png" alt="Plant State" />
+            </div>
+            <p id="visualState" class="visual-state">visual: stable</p>
+        </section>
+
+        <section class="card result-card">
+            <h2>Simulation Result</h2>
+
+            <div class="result-grid">
+                <div>
+                    <span>Tick</span>
+                    <strong id="tickValue">0</strong>
+                </div>
+                <div>
+                    <span>Last Action</span>
+                    <strong id="lastActionValue">None</strong>
+                </div>
+                <div>
+                    <span>Total Energy</span>
+                    <strong id="energyValue">100.0</strong>
+                </div>
+                <div>
+                    <span>Visual State</span>
+                    <strong id="visualStateValue">stable</strong>
+                </div>
+            </div>
+
+            <h3>Active States</h3>
+            <pre id="activeStatesBox">No active states.</pre>
+
+            <h3>AI Recommendation Mock</h3>
+            <pre id="recommendationBox">Press Run Simulation to start BIO-OS analysis.</pre>
+        </section>
+
+        <section class="card log-card">
+            <h2>Tick History</h2>
+            <table>
+                <thead>
+                <tr>
+                    <th>Tick</th>
+                    <th>Water</th>
+                    <th>Light</th>
+                    <th>Temp</th>
+                    <th>Action</th>
+                    <th>Visual</th>
+                </tr>
+                </thead>
+                <tbody id="historyTable"></tbody>
+            </table>
+        </section>
+    </main>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

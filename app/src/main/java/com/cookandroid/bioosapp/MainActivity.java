@@ -35,23 +35,28 @@ public class MainActivity extends Activity {
     private PlantTreeView plantTreeView;
     private PlantPixelView plantPixelView;
 
-    private final ArrayList<String> tickHistory = new ArrayList<>();
-    private final ArrayList<String> csvHistory = new ArrayList<>();
-    private final Random random = new Random();
-    private int scenarioIndex = 0;
+    private TextView pixelViewTitle;
+    private TextView structureViewTitle;
 
     private Button rawJsonToggleButton;
     private Button saveCsvButton;
     private Button runRandomButton;
     private Button runBalancedButton;
+    private Button viewModeToggleButton;
 
     private boolean isRawJsonVisible = false;
+    private boolean isPixelMode = true;
+
+    private final ArrayList<String> tickHistory = new ArrayList<>();
+    private final ArrayList<String> csvHistory = new ArrayList<>();
+    private final Random random = new Random();
+
+    private int scenarioIndex = 0;
+    private int datasetSampleIndex = 0;
 
     private double lastWaterInput = 0.0;
     private double lastLightInput = 0.0;
     private double lastTemperatureInput = 0.0;
-
-    private int datasetSampleIndex = 0;
 
     private final double[][] scenarios = {
             {15.0, 80.0, 32.0},
@@ -127,12 +132,17 @@ public class MainActivity extends Activity {
         statesText = createSection(root, "Active States");
         aiRecommendationText = createSection(root, "AI Recommendation");
 
-        TextView pixelVisualTitle = new TextView(this);
-        pixelVisualTitle.setText("\nPlant Pixel View");
-        pixelVisualTitle.setTextSize(18);
-        pixelVisualTitle.setTypeface(null, Typeface.BOLD);
-        pixelVisualTitle.setPadding(0, 18, 0, 8);
-        root.addView(pixelVisualTitle);
+        viewModeToggleButton = new Button(this);
+        viewModeToggleButton.setText("View Mode: Pixel");
+        viewModeToggleButton.setOnClickListener(v -> toggleViewMode());
+        root.addView(viewModeToggleButton);
+
+        pixelViewTitle = new TextView(this);
+        pixelViewTitle.setText("\nPlant Pixel View");
+        pixelViewTitle.setTextSize(18);
+        pixelViewTitle.setTypeface(null, Typeface.BOLD);
+        pixelViewTitle.setPadding(0, 18, 0, 8);
+        root.addView(pixelViewTitle);
 
         plantPixelView = new PlantPixelView(this);
         plantPixelView.setPadding(0, 12, 0, 12);
@@ -144,12 +154,12 @@ public class MainActivity extends Activity {
                 )
         );
 
-        TextView visualTitle = new TextView(this);
-        visualTitle.setText("\nPlant Structure View");
-        visualTitle.setTextSize(18);
-        visualTitle.setTypeface(null, Typeface.BOLD);
-        visualTitle.setPadding(0, 18, 0, 8);
-        root.addView(visualTitle);
+        structureViewTitle = new TextView(this);
+        structureViewTitle.setText("\nPlant Structure View");
+        structureViewTitle.setTextSize(18);
+        structureViewTitle.setTypeface(null, Typeface.BOLD);
+        structureViewTitle.setPadding(0, 18, 0, 8);
+        root.addView(structureViewTitle);
 
         plantTreeView = new PlantTreeView(this);
         plantTreeView.setPadding(0, 12, 0, 12);
@@ -173,6 +183,8 @@ public class MainActivity extends Activity {
         rawJsonText = createSection(root, "Raw JSON");
         rawJsonText.setVisibility(View.GONE);
 
+        applyInitialViewMode();
+
         scrollView.addView(root);
         return scrollView;
     }
@@ -191,6 +203,73 @@ public class MainActivity extends Activity {
         root.addView(content);
 
         return content;
+    }
+
+    private void applyInitialViewMode() {
+        isPixelMode = true;
+
+        if (viewModeToggleButton != null) {
+            viewModeToggleButton.setText("View Mode: Pixel");
+        }
+
+        if (pixelViewTitle != null) {
+            pixelViewTitle.setVisibility(View.VISIBLE);
+        }
+
+        if (plantPixelView != null) {
+            plantPixelView.setVisibility(View.VISIBLE);
+        }
+
+        if (structureViewTitle != null) {
+            structureViewTitle.setVisibility(View.GONE);
+        }
+
+        if (plantTreeView != null) {
+            plantTreeView.setVisibility(View.GONE);
+        }
+    }
+
+    private void toggleViewMode() {
+        isPixelMode = !isPixelMode;
+
+        if (isPixelMode) {
+            viewModeToggleButton.setText("View Mode: Pixel");
+
+            if (pixelViewTitle != null) {
+                pixelViewTitle.setVisibility(View.VISIBLE);
+            }
+
+            if (plantPixelView != null) {
+                plantPixelView.setVisibility(View.VISIBLE);
+            }
+
+            if (structureViewTitle != null) {
+                structureViewTitle.setVisibility(View.GONE);
+            }
+
+            if (plantTreeView != null) {
+                plantTreeView.setVisibility(View.GONE);
+            }
+
+        } else {
+            viewModeToggleButton.setText("View Mode: Structure");
+
+            if (pixelViewTitle != null) {
+                pixelViewTitle.setVisibility(View.GONE);
+            }
+
+            if (plantPixelView != null) {
+                plantPixelView.setVisibility(View.GONE);
+            }
+
+            if (structureViewTitle != null) {
+                structureViewTitle.setVisibility(View.VISIBLE);
+            }
+
+            if (plantTreeView != null) {
+                plantTreeView.setVisibility(View.VISIBLE);
+            }
+        }
     }
 
     private void runNextScenario() {

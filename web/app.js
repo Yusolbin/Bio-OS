@@ -86,15 +86,37 @@ addRuleButton.addEventListener("click", () => {
     renderRules();
 });
 
-function runSimulationFromInput() {
+async function runSimulationFromInput() {
     const water = Number(waterInput.value);
     const light = Number(lightInput.value);
     const temperature = Number(temperatureInput.value);
 
-    const result = simulateTick(water, light, temperature);
+    try {
+        const response = await fetch("http://localhost:8080/api/simulations/run", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                water: water,
+                light: light,
+                temperature: temperature,
+            }),
+        });
 
-    renderResult(result);
-    appendHistory(result);
+        if (!response.ok) {
+            throw new Error("Spring API request failed: " + response.status);
+        }
+
+        const result = await response.json();
+
+        renderResult(result);
+        appendHistory(result);
+
+    } catch (error) {
+        console.error(error);
+        alert("Spring Boot API 연결 실패. 서버가 켜져 있는지 확인해줘.");
+    }
 }
 
 function simulateTick(water, light, temperature) {
@@ -222,15 +244,16 @@ function chooseVisualState(activeStates, lastAction, totalEnergy) {
 }
 
 function renderResult(result) {
-    const imagePath = plantImages[result.visual] || plantImages.stable;
+    const visualKey = result.visualState || result.visual || "stable";
+    const imagePath = plantImages[visualKey] || plantImages.stable;
 
     plantImage.src = imagePath;
-    visualState.textContent = `visual: ${result.visual}`;
+    visualState.textContent = `visual: ${visualKey}`;
 
     tickValue.textContent = result.tick;
     lastActionValue.textContent = result.lastAction;
     energyValue.textContent = result.totalEnergy.toFixed(1);
-    visualStateValue.textContent = result.visual;
+    visualStateValue.textContent = visualKey;
 
     if (result.activeStates.length === 0) {
         activeStatesBox.textContent = "No active states.";
@@ -252,7 +275,7 @@ function appendHistory(result) {
         <td>${result.light.toFixed(1)}</td>
         <td>${result.temperature.toFixed(1)}</td>
         <td>${result.lastAction}</td>
-        <td>${result.visual}</td>
+        <td>${result.visualState || result.visual || "stable"}</td>
     `;
 
     historyTable.prepend(row);

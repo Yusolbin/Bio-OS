@@ -27,4 +27,14 @@ public class GeneRuleController {
     public List<GeneRuleResponse> getRules() {
         return geneRuleService.getRules();
     }
+
+    @PatchMapping("/{id}/toggle")
+    public GeneRuleResponse toggleRule(@PathVariable Long id) {
+        return geneRuleService.toggleRule(id);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteRule(@PathVariable Long id) {
+        geneRuleService.deleteRule(id);
+    }
 }

@@ -4,6 +4,9 @@ import com.yusolbin.bio_os.dto.GeneRuleRequest;
 import com.yusolbin.bio_os.dto.GeneRuleResponse;
 import com.yusolbin.bio_os.model.GeneRule;
 import com.yusolbin.bio_os.repository.GeneRuleRepository;
+
+import jakarta.persistence.EntityNotFoundException;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -35,5 +38,24 @@ public class GeneRuleService {
                 .stream()
                 .map(GeneRuleResponse::new)
                 .toList();
+    }
+
+    public GeneRuleResponse toggleRule(Long id) {
+    GeneRule geneRule = geneRuleRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("GeneRule not found: " + id));
+
+    geneRule.toggleActive();
+
+    GeneRule savedRule = geneRuleRepository.save(geneRule);
+
+    return new GeneRuleResponse(savedRule);
+}
+
+    public void deleteRule(Long id) {
+        if (!geneRuleRepository.existsById(id)) {
+            throw new EntityNotFoundException("GeneRule not found: " + id);
+        }
+
+        geneRuleRepository.deleteById(id);
     }
 }

@@ -63,4 +63,12 @@ public class GeneRule {
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
+
+    public void toggleActive() {
+        this.active = !this.active;
+    }
+
+    public void deactivate() {
+        this.active = false;
+    }
 }

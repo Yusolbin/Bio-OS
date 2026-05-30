@@ -10,4 +10,11 @@ public interface GeneRuleRepository extends JpaRepository<GeneRule, Long> {
     List<GeneRule> findAllByOrderByIdDesc();
 
     List<GeneRule> findByActiveTrue();
+
+    boolean existsByFieldNameAndOperatorAndThresholdAndTargetState(
+        String fieldName,
+        String operator,
+        double threshold,
+        String targetState
+    );
 }

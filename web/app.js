@@ -27,6 +27,7 @@ const temperatureInput = document.getElementById("temperatureInput");
 
 const runButton = document.getElementById("runButton");
 const randomButton = document.getElementById("randomButton");
+const loadLogsButton = document.getElementById("loadLogsButton");
 const resetButton = document.getElementById("resetButton");
 
 const addRuleButton = document.getElementById("addRuleButton");
@@ -69,6 +70,10 @@ resetButton.addEventListener("click", () => {
         activeStates: [],
         visual: "stable",
     });
+});
+
+loadLogsButton.addEventListener("click", () => {
+    loadSimulationLogs();
 });
 
 addRuleButton.addEventListener("click", () => {
@@ -279,6 +284,49 @@ function appendHistory(result) {
     `;
 
     historyTable.prepend(row);
+}
+
+async function loadSimulationLogs() {
+    try {
+        const response = await fetch("http://localhost:8080/api/simulations/logs");
+
+        if (!response.ok) {
+            throw new Error("Failed to load simulation logs: " + response.status);
+        }
+
+        const logs = await response.json();
+
+        historyTable.innerHTML = "";
+
+        logs.forEach((log) => {
+            appendHistoryFromLog(log);
+        });
+
+        if (logs.length > 0) {
+            renderResult(logs[0]);
+        }
+
+    } catch (error) {
+        console.error(error);
+        alert("DB 로그 조회 실패. Spring Boot 서버가 켜져 있는지 확인해주세요.");
+    }
+}
+
+function appendHistoryFromLog(log) {
+    const row = document.createElement("tr");
+
+    const visualKey = log.visualState || log.visual || "stable";
+
+    row.innerHTML = `
+        <td>${log.tick}</td>
+        <td>${Number(log.water).toFixed(1)}</td>
+        <td>${Number(log.light).toFixed(1)}</td>
+        <td>${Number(log.temperature).toFixed(1)}</td>
+        <td>${log.lastAction}</td>
+        <td>${visualKey}</td>
+    `;
+
+    historyTable.appendChild(row);
 }
 
 function makeRecommendation(result) {

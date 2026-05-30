@@ -77,18 +77,7 @@ loadLogsButton.addEventListener("click", () => {
 });
 
 addRuleButton.addEventListener("click", () => {
-    const field = document.getElementById("ruleField").value;
-    const operator = document.getElementById("ruleOperator").value;
-    const threshold = Number(document.getElementById("ruleThreshold").value);
-    const state = document.getElementById("ruleState").value.trim();
-
-    if (!state) {
-        alert("State name을 입력해줘.");
-        return;
-    }
-
-    rules.push({ field, operator, threshold, state });
-    renderRules();
+    createGeneRule();
 });
 
 async function runSimulationFromInput() {
@@ -312,6 +301,72 @@ async function loadSimulationLogs() {
     }
 }
 
+async function createGeneRule() {
+    const fieldName = document.getElementById("ruleField").value;
+    const operator = document.getElementById("ruleOperator").value;
+    const threshold = Number(document.getElementById("ruleThreshold").value);
+    const targetState = document.getElementById("ruleState").value.trim();
+
+    if (!targetState) {
+        alert("State name을 입력해줘.");
+        return;
+    }
+
+    try {
+        const response = await fetch("http://localhost:8080/api/rules", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                fieldName: fieldName,
+                operator: operator,
+                threshold: threshold,
+                targetState: targetState,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to create gene rule: " + response.status);
+        }
+
+        await loadGeneRules();
+
+    } catch (error) {
+        console.error(error);
+        alert("Gene Rule 저장 실패. Spring Boot 서버가 켜져 있는지 확인해주세요.");
+    }
+}
+
+async function loadGeneRules() {
+    try {
+        const response = await fetch("http://localhost:8080/api/rules");
+
+        if (!response.ok) {
+            throw new Error("Failed to load gene rules: " + response.status);
+        }
+
+        const serverRules = await response.json();
+
+        ruleList.innerHTML = "";
+
+        serverRules.forEach((rule) => {
+            const item = document.createElement("li");
+
+            const status = rule.active ? "ON" : "OFF";
+
+            item.textContent =
+                `IF ${rule.fieldName} ${rule.operator} ${rule.threshold} THEN ${rule.targetState} = ${status}`;
+
+            ruleList.appendChild(item);
+        });
+
+    } catch (error) {
+        console.error(error);
+        alert("Gene Rule 조회 실패. Spring Boot 서버가 켜져 있는지 확인해주세요.");
+    }
+}
+
 function appendHistoryFromLog(log) {
     const row = document.createElement("tr");
 
@@ -395,7 +450,7 @@ function randomRange(min, max) {
     return min + (max - min) * Math.random();
 }
 
-renderRules();
+loadGeneRules();
 
 renderResult({
     tick: 0,

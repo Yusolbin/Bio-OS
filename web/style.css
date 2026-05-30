@@ -330,4 +330,55 @@ tbody tr:hover {
     .plant-stage {
         height: 280px;
     }
+
+    .rule-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .rule-item:last-child {
+        border-bottom: 0;
+    }
+
+    .rule-text {
+        flex: 1;
+        font-family: Consolas, monospace;
+        font-size: 13px;
+    }
+
+    .inactive-rule {
+        color: #94a3b8;
+        text-decoration: line-through;
+    }
+
+    .rule-actions {
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .mini-button {
+        width: auto;
+        margin-top: 0;
+        padding: 7px 10px;
+        border-radius: 10px;
+        font-size: 12px;
+        box-shadow: none;
+    }
+
+    .toggle-button {
+        background: #eef6ff;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+    }
+
+    .delete-button {
+        background: #fff1f2;
+        color: #be123c;
+        border: 1px solid #fecdd3;
+    }
 }

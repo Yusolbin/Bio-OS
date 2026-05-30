@@ -352,11 +352,42 @@ async function loadGeneRules() {
 
         serverRules.forEach((rule) => {
             const item = document.createElement("li");
+            item.className = "rule-item";
+
+            const ruleText = document.createElement("span");
+            ruleText.className = "rule-text";
 
             const status = rule.active ? "ON" : "OFF";
 
-            item.textContent =
+            ruleText.textContent =
                 `IF ${rule.fieldName} ${rule.operator} ${rule.threshold} THEN ${rule.targetState} = ${status}`;
+
+            if (!rule.active) {
+                ruleText.classList.add("inactive-rule");
+            }
+
+            const actions = document.createElement("div");
+            actions.className = "rule-actions";
+
+            const toggleButton = document.createElement("button");
+            toggleButton.className = "mini-button toggle-button";
+            toggleButton.textContent = rule.active ? "Disable" : "Enable";
+            toggleButton.addEventListener("click", () => {
+                toggleGeneRule(rule.id);
+            });
+
+            const deleteButton = document.createElement("button");
+            deleteButton.className = "mini-button delete-button";
+            deleteButton.textContent = "Delete";
+            deleteButton.addEventListener("click", () => {
+                deleteGeneRule(rule.id);
+            });
+
+            actions.appendChild(toggleButton);
+            actions.appendChild(deleteButton);
+
+            item.appendChild(ruleText);
+            item.appendChild(actions);
 
             ruleList.appendChild(item);
         });
@@ -364,6 +395,48 @@ async function loadGeneRules() {
     } catch (error) {
         console.error(error);
         alert("Gene Rule 조회 실패. Spring Boot 서버가 켜져 있는지 확인해주세요.");
+    }
+}
+
+async function toggleGeneRule(ruleId) {
+    try {
+        const response = await fetch(`http://localhost:8080/api/rules/${ruleId}/toggle`, {
+            method: "PATCH",
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to toggle gene rule: " + response.status);
+        }
+
+        await loadGeneRules();
+
+    } catch (error) {
+        console.error(error);
+        alert("Gene Rule 활성/비활성 전환 실패.");
+    }
+}
+
+async function deleteGeneRule(ruleId) {
+    const confirmed = confirm("이 Gene Rule을 삭제할까?");
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:8080/api/rules/${ruleId}`, {
+            method: "DELETE",
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to delete gene rule: " + response.status);
+        }
+
+        await loadGeneRules();
+
+    } catch (error) {
+        console.error(error);
+        alert("Gene Rule 삭제 실패.");
     }
 }
 

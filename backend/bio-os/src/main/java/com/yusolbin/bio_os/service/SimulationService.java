@@ -4,6 +4,8 @@ import com.yusolbin.bio_os.dto.SimulationRequest;
 import com.yusolbin.bio_os.dto.SimulationResponse;
 import com.yusolbin.bio_os.dto.SimulationLogResponse;
 import com.yusolbin.bio_os.model.SimulationLog;
+import com.yusolbin.bio_os.model.GeneRule;
+import com.yusolbin.bio_os.repository.GeneRuleRepository;
 import com.yusolbin.bio_os.repository.SimulationLogRepository;
 import org.springframework.stereotype.Service;
 
@@ -14,11 +16,16 @@ import java.util.List;
 public class SimulationService {
 
     private final SimulationLogRepository simulationLogRepository;
+    private final GeneRuleRepository geneRuleRepository;
 
     private int tick = 0;
 
-    public SimulationService(SimulationLogRepository simulationLogRepository) {
+    public SimulationService(
+        SimulationLogRepository simulationLogRepository,
+        GeneRuleRepository geneRuleRepository
+    ) {
         this.simulationLogRepository = simulationLogRepository;
+        this.geneRuleRepository = geneRuleRepository;
     }
 
     public SimulationResponse runSimulation(SimulationRequest request) {
@@ -72,29 +79,96 @@ public class SimulationService {
     }
 
     private List<String> evaluateActiveStates(double water, double light, double temperature) {
-        List<String> activeStates = new ArrayList<>();
+    List<String> activeStates = new ArrayList<>();
 
-        if (water < 30) {
-            activeStates.add("DroughtMode");
-        }
+    List<GeneRule> activeRules = geneRuleRepository.findByActiveTrue();
 
-        if (light > 70) {
-            activeStates.add("PhotosynthesisBoost");
-        }
+    if (activeRules.isEmpty()) {
+        addDefaultRules(activeStates, water, light, temperature);
+        return activeStates;
+    }
 
-        if (temperature > 35) {
-            activeStates.add("HeatStress");
-        }
+    for (GeneRule rule : activeRules) {
+        double value = getEnvironmentValue(rule.getFieldName(), water, light, temperature);
 
-        if (water < 10) {
-            activeStates.add("PruningMode");
+        if (evaluateCondition(value, rule.getOperator(), rule.getThreshold())) {
+            activeStates.add(rule.getTargetState());
         }
-
-        if (water > 100) {
-            activeStates.add("RecoveryMode");
-        }
+    }
 
         return activeStates;
+    }
+
+    private void addDefaultRules(
+        List<String> activeStates,
+        double water,
+        double light,
+        double temperature
+) {
+    if (water < 30) {
+        activeStates.add("DroughtMode");
+    }
+
+    if (light > 70) {
+        activeStates.add("PhotosynthesisBoost");
+    }
+
+    if (temperature > 35) {
+        activeStates.add("HeatStress");
+    }
+
+    if (water < 10) {
+        activeStates.add("PruningMode");
+    }
+
+    if (water > 100) {
+        activeStates.add("RecoveryMode");
+    }
+}
+
+private double getEnvironmentValue(
+        String fieldName,
+        double water,
+        double light,
+        double temperature
+) {
+    if ("Water".equalsIgnoreCase(fieldName)) {
+        return water;
+    }
+
+    if ("Light".equalsIgnoreCase(fieldName)) {
+        return light;
+    }
+
+    if ("Temperature".equalsIgnoreCase(fieldName)) {
+        return temperature;
+    }
+
+    return 0;
+}
+
+private boolean evaluateCondition(double value, String operator, double threshold) {
+    if ("<".equals(operator) || "LT".equalsIgnoreCase(operator)) {
+        return value < threshold;
+    }
+
+    if (">".equals(operator) || "GT".equalsIgnoreCase(operator)) {
+        return value > threshold;
+    }
+
+    if ("<=".equals(operator) || "LTE".equalsIgnoreCase(operator)) {
+        return value <= threshold;
+    }
+
+    if (">=".equals(operator) || "GTE".equalsIgnoreCase(operator)) {
+        return value >= threshold;
+    }
+
+    if ("==".equals(operator) || "=".equals(operator) || "EQ".equalsIgnoreCase(operator)) {
+        return value == threshold;
+    }
+
+        return false;
     }
 
     private double calculateTotalEnergy(

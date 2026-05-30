@@ -2,6 +2,7 @@ package com.yusolbin.bio_os.service;
 
 import com.yusolbin.bio_os.dto.SimulationRequest;
 import com.yusolbin.bio_os.dto.SimulationResponse;
+import com.yusolbin.bio_os.dto.SimulationLogResponse;
 import com.yusolbin.bio_os.model.SimulationLog;
 import com.yusolbin.bio_os.repository.SimulationLogRepository;
 import org.springframework.stereotype.Service;
@@ -61,6 +62,13 @@ public class SimulationService {
                 visualState,
                 activeStates
         );
+    }
+
+    public List<SimulationLogResponse> getSimulationLogs() {
+    return simulationLogRepository.findAllByOrderByIdDesc()
+            .stream()
+            .map(SimulationLogResponse::new)
+            .toList();
     }
 
     private List<String> evaluateActiveStates(double water, double light, double temperature) {

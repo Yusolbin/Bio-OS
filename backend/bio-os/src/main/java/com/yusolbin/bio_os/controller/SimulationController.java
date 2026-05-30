@@ -28,4 +28,9 @@ public class SimulationController {
     public List<SimulationLogResponse> getSimulationLogs() {
         return simulationService.getSimulationLogs();
     }
+
+    @DeleteMapping("/logs")
+    public void clearSimulationLogs() {
+        simulationService.clearSimulationLogs();
+    }
 }

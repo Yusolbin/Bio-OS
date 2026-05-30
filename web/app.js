@@ -58,18 +58,7 @@ randomButton.addEventListener("click", () => {
 });
 
 resetButton.addEventListener("click", () => {
-    tick = 0;
-    historyTable.innerHTML = "";
-    renderResult({
-        tick: 0,
-        water: 0,
-        light: 0,
-        temperature: 0,
-        totalEnergy: 100,
-        lastAction: "None",
-        activeStates: [],
-        visual: "stable",
-    });
+    clearSimulationLogs();
 });
 
 loadLogsButton.addEventListener("click", () => {
@@ -79,6 +68,43 @@ loadLogsButton.addEventListener("click", () => {
 addRuleButton.addEventListener("click", () => {
     createGeneRule();
 });
+
+async function clearSimulationLogs() {
+    const confirmed = confirm("저장된 Simulation Log를 모두 삭제하시겠습니까?");
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+        const response = await fetch("http://localhost:8080/api/simulations/logs", {
+            method: "DELETE",
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to clear simulation logs: " + response.status);
+        }
+
+        historyTable.innerHTML = "";
+
+        renderResult({
+            tick: 0,
+            water: 0,
+            light: 0,
+            temperature: 0,
+            totalEnergy: 100,
+            lastAction: "None",
+            activeStates: [],
+            visualState: "stable",
+        });
+
+        alert("Simulation Log가 삭제되었습니다.");
+
+    } catch (error) {
+        console.error(error);
+        alert("Simulation Log 삭제에 실패했습니다. Spring Boot 서버가 실행 중인지 확인해 주세요.");
+    }
+}
 
 async function runSimulationFromInput() {
     const water = Number(waterInput.value);
@@ -109,7 +135,7 @@ async function runSimulationFromInput() {
 
     } catch (error) {
         console.error(error);
-        alert("Spring Boot API 연결 실패. 서버가 켜져 있는지 확인해줘.");
+        alert("Spring Boot API 연결에 실패했습니다. 서버가 켜져 있는지 확인해 주세요.");
     }
 }
 
@@ -297,7 +323,7 @@ async function loadSimulationLogs() {
 
     } catch (error) {
         console.error(error);
-        alert("DB 로그 조회 실패. Spring Boot 서버가 켜져 있는지 확인해주세요.");
+        alert("DB 로그 조회에 실패했습니다. Spring Boot 서버가 켜져 있는지 확인해 주세요.");
     }
 }
 
@@ -308,7 +334,7 @@ async function createGeneRule() {
     const targetState = document.getElementById("ruleState").value.trim();
 
     if (!targetState) {
-        alert("State name을 입력해줘.");
+        alert("State name을 입력해주세요.");
         return;
     }
 
@@ -334,7 +360,7 @@ async function createGeneRule() {
 
     } catch (error) {
         console.error(error);
-        alert("Gene Rule 저장 실패. Spring Boot 서버가 켜져 있는지 확인해주세요.");
+        alert("Gene Rule 저장에 실패했습니다. Spring Boot 서버가 켜져 있는지 확인해 주세요.");
     }
 }
 
@@ -394,7 +420,7 @@ async function loadGeneRules() {
 
     } catch (error) {
         console.error(error);
-        alert("Gene Rule 조회 실패. Spring Boot 서버가 켜져 있는지 확인해주세요.");
+        alert("Gene Rule 조회에 실패했습니다. Spring Boot 서버가 켜져 있는지 확인해 주세요.");
     }
 }
 
@@ -412,12 +438,12 @@ async function toggleGeneRule(ruleId) {
 
     } catch (error) {
         console.error(error);
-        alert("Gene Rule 활성/비활성 전환 실패.");
+        alert("Gene Rule 활성/비활성 전환에 실패했습니다. Spring Boot 서버가 실행 중인지 확인해 주세요.");
     }
 }
 
 async function deleteGeneRule(ruleId) {
-    const confirmed = confirm("이 Gene Rule을 삭제할까?");
+    const confirmed = confirm("이 Gene Rule을 삭제하시겠습니까?");
 
     if (!confirmed) {
         return;
@@ -436,7 +462,7 @@ async function deleteGeneRule(ruleId) {
 
     } catch (error) {
         console.error(error);
-        alert("Gene Rule 삭제 실패.");
+        alert("Gene Rule 삭제에 실패했습니다.");
     }
 }
 

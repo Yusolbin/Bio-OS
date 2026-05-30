@@ -253,4 +253,9 @@ private boolean evaluateCondition(double value, String operator, double threshol
 
         return "stable";
     }
+
+    public void clearSimulationLogs() {
+        simulationLogRepository.deleteAll();
+    }
+
 }

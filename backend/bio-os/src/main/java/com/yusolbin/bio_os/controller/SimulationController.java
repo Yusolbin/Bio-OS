@@ -1,0 +1,23 @@
+package com.yusolbin.bio_os.controller;
+
+import com.yusolbin.bio_os.dto.SimulationRequest;
+import com.yusolbin.bio_os.dto.SimulationResponse;
+import com.yusolbin.bio_os.service.SimulationService;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/simulations")
+@CrossOrigin(origins = "*")
+public class SimulationController {
+
+    private final SimulationService simulationService;
+
+    public SimulationController(SimulationService simulationService) {
+        this.simulationService = simulationService;
+    }
+
+    @PostMapping("/run")
+    public SimulationResponse runSimulation(@RequestBody SimulationRequest request) {
+        return simulationService.runSimulation(request);
+    }
+}

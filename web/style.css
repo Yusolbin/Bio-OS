@@ -170,8 +170,8 @@ button.danger:hover {
 
 .rule-row {
     display: grid;
-    grid-template-columns: 40px 1fr 80px 100px 60px 1fr 60px;
-    gap: 8px;
+    grid-template-columns: 36px 1.1fr 1fr 1.2fr 54px 1.6fr 52px;
+    gap: 10px;
     align-items: center;
     color: #334155;
     font-weight: 700;
@@ -183,11 +183,8 @@ button.danger:hover {
 }
 
 .rule-list {
-    margin-top: 14px;
-    padding: 16px;
-    border-radius: 18px;
-    background: var(--card-soft);
-    border: 1px solid var(--line);
+    max-height: 250px;
+    overflow-y: auto;
 }
 
 .rule-list ul {
@@ -475,5 +472,47 @@ tbody tr:hover {
 
 .effect-row input {
     margin-top: 7px;
+}
+
+.risk-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    min-width: 92px;
+    padding: 7px 10px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+}
+
+.risk-low {
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+}
+
+.risk-medium {
+    background: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fde68a;
+}
+
+.risk-high {
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #fed7aa;
+}
+
+.risk-critical {
+    background: #fff1f2;
+    color: #be123c;
+    border: 1px solid #fecdd3;
+}
+
+#matchedRulesBox {
+    max-height: 150px;
+    overflow-y: auto;
 }
 }

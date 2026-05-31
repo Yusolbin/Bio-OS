@@ -45,6 +45,8 @@ const activeStatesBox = document.getElementById("activeStatesBox");
 const recommendationBox = document.getElementById("recommendationBox");
 const historyTable = document.getElementById("historyTable");
 
+const energyDeltaValue = document.getElementById("energyDeltaValue");
+const riskLevelValue = document.getElementById("riskLevelValue");
 const matchedRulesBox = document.getElementById("matchedRulesBox");
 
 runButton.addEventListener("click", () => {
@@ -273,9 +275,14 @@ function renderResult(result) {
     visualState.textContent = `visual: ${visualKey}`;
 
     tickValue.textContent = result.tick;
-    lastActionValue.textContent = result.lastAction;
-    energyValue.textContent = result.totalEnergy.toFixed(1);
-    visualStateValue.textContent = visualKey;
+lastActionValue.textContent = result.lastAction;
+energyValue.textContent = Number(result.totalEnergy).toFixed(1);
+energyDeltaValue.textContent = formatSignedNumber(result.energyDelta || 0);
+visualStateValue.textContent = visualKey;
+
+const riskLevel = result.riskLevel || "LOW";
+riskLevelValue.textContent = riskLevel;
+riskLevelValue.className = `risk-badge ${getRiskClass(riskLevel)}`;
 
     if (result.activeStates.length === 0) {
         activeStatesBox.textContent = "No active states.";
@@ -293,7 +300,8 @@ function renderResult(result) {
             .join("\n");
     }
 
-    recommendationBox.textContent = makeRecommendation(result);
+    recommendationBox.textContent =
+        result.recommendation || makeRecommendation(result);
 }
 
 function appendHistory(result) {
@@ -386,7 +394,16 @@ async function loadGeneRules() {
 
         const serverRules = await response.json();
 
+        console.log("Loaded gene rules:", serverRules);
+
         ruleList.innerHTML = "";
+
+        if (!serverRules || serverRules.length === 0) {
+            const emptyItem = document.createElement("li");
+            emptyItem.textContent = "No gene rules registered.";
+            ruleList.appendChild(emptyItem);
+            return;
+        }
 
         serverRules.forEach((rule) => {
             const item = document.createElement("li");
@@ -396,13 +413,13 @@ async function loadGeneRules() {
             ruleText.className = "rule-text";
 
             const status = rule.active ? "ON" : "OFF";
-
             const displayOperator = formatOperator(rule.operator);
+            const energyEffect = formatSignedNumber(rule.energyEffect || 0);
 
-            recommendationBox.textContent =
-                result.recommendation || makeRecommendation(result);
-            
-                if (!rule.active) {
+            ruleText.textContent =
+                `IF ${rule.fieldName} ${displayOperator} ${rule.threshold} THEN ${rule.targetState} = ${status} / Effect ${energyEffect}`;
+
+            if (!rule.active) {
                 ruleText.classList.add("inactive-rule");
             }
 
@@ -434,7 +451,7 @@ async function loadGeneRules() {
 
     } catch (error) {
         console.error(error);
-        alert("Gene Rule 조회에 실패했습니다. Spring Boot 서버가 켜져 있는지 확인해 주세요.");
+        alert("Gene Rule 조회에 실패했습니다. Spring Boot 서버가 실행 중인지 확인해 주세요.");
     }
 }
 
@@ -580,6 +597,30 @@ function formatOperator(operator) {
     }
 }
 
+function formatSignedNumber(value) {
+    const numberValue = Number(value || 0);
+
+    if (numberValue > 0) {
+        return `+${numberValue.toFixed(1)}`;
+    }
+
+    return numberValue.toFixed(1);
+}
+
+function getRiskClass(riskLevel) {
+    switch (riskLevel) {
+        case "CRITICAL":
+            return "risk-critical";
+        case "HIGH":
+            return "risk-high";
+        case "MEDIUM":
+            return "risk-medium";
+        case "LOW":
+        default:
+            return "risk-low";
+    }
+}
+
 loadGeneRules();
 
 renderResult({
@@ -591,4 +632,9 @@ renderResult({
     lastAction: "None",
     activeStates: [],
     visual: "stable",
+    energyDelta: 0,
+    matchedRules: [],
+    riskLevel: "LOW",
+    recommendation: "Press Run Simulation to start BIO-OS analysis.",
 });
+

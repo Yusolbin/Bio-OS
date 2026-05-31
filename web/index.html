@@ -45,58 +45,51 @@
         </section>
 
         <section class="card rule-panel">
-            <h2>Gene Rule Input</h2>
+    <h2>Gene Rule Input</h2>
 
-            <div class="rule-row">
-                <span>IF</span>
+    <div class="rule-row">
+        <span>IF</span>
 
-                <select id="ruleField">
-                    <option value="Water">Water</option>
-                    <option value="Light">Light</option>
-                    <option value="Temperature">Temperature</option>
-                </select>
+        <select id="ruleField">
+            <option value="Water">Water</option>
+            <option value="Light">Light</option>
+            <option value="Temperature">Temperature</option>
+        </select>
 
-                <select id="ruleOperator">
-                    <option value="LT">&lt;</option>
-                    <option value="GT">&gt;</option>
-                    <option value="LTE">&lt;=</option>
-                    <option value="GTE">&gt;=</option>
-                </select>
+        <select id="ruleOperator">
+            <option value="LT">&lt;</option>
+            <option value="GT">&gt;</option>
+            <option value="LTE">&lt;=</option>
+            <option value="GTE">&gt;=</option>
+        </select>
 
-                <input id="ruleThreshold" type="number" value="30" />
+        <input id="ruleThreshold" type="number" value="30" />
 
-                <span>THEN</span>
+        <span>THEN</span>
 
-                <input id="ruleState" type="text" value="DroughtMode" />
+        <input id="ruleState" type="text" value="DroughtMode" />
 
-                <span>= ON</span>
+        <span>= ON</span>
+    </div>
 
-                <label class="effect-label">
-                    Energy Effect
-                    <input id="ruleEnergyEffect" type="number" value="-30" />
-                </label>
+    <div class="effect-row">
+        <label for="ruleEnergyEffect">Energy Effect</label>
+        <input id="ruleEnergyEffect" type="number" value="-30" />
+    </div>
+
+    <button id="addRuleButton" class="secondary">Save Rule</button>
+
+    <div class="rule-list">
+        <div class="section-header">
+            <div>
+                <h3>Gene Rule Registry</h3>
+                <p>Rules are stored in MySQL and applied during simulation.</p>
             </div>
+        </div>
 
-            <div class="effect-row">
-                <label>
-                    Energy Effect
-                    <input id="ruleEnergyEffect" type="number" value="40"/>
-                </label>
-            </div>
-
-            <button id="addRuleButton" class="secondary">Save Rule</button>
-
-            <div class="rule-list">
-                <div class="section-header">
-                    <div>
-                        <h3>Gene Rule Registry</h3>
-                        <p>Rules are stored in MySQL and applied during simulation.</p>
-                    </div>
-                </div>
-
-                <ul id="ruleList"></ul>
-            </div>
-        </section>
+        <ul id="ruleList"></ul>
+    </div>
+</section>
 
         <section class="card plant-card">
             <h2>Plant Pixel View</h2>
@@ -112,26 +105,36 @@
             <h2>Simulation Result</h2>
 
             <div class="result-grid">
-                <div>
-                    <span>Tick</span>
-                    <strong id="tickValue">0</strong>
-                </div>
+    <div>
+        <span>Tick</span>
+        <strong id="tickValue">0</strong>
+    </div>
 
-                <div>
-                    <span>Last Action</span>
-                    <strong id="lastActionValue">None</strong>
-                </div>
+    <div>
+        <span>Last Action</span>
+        <strong id="lastActionValue">None</strong>
+    </div>
 
-                <div>
-                    <span>Total Energy</span>
-                    <strong id="energyValue">100.0</strong>
-                </div>
+    <div>
+        <span>Total Energy</span>
+        <strong id="energyValue">100.0</strong>
+    </div>
 
-                <div>
-                    <span>Visual State</span>
-                    <strong id="visualStateValue">stable</strong>
-                </div>
-            </div>
+    <div>
+        <span>Energy Delta</span>
+        <strong id="energyDeltaValue">0.0</strong>
+    </div>
+
+    <div>
+        <span>Risk Level</span>
+        <strong id="riskLevelValue" class="risk-badge risk-low">LOW</strong>
+    </div>
+
+    <div>
+        <span>Visual State</span>
+        <strong id="visualStateValue">stable</strong>
+    </div>
+</div>
 
             <h3>Active States</h3>
             <pre id="activeStatesBox">No active states.</pre>

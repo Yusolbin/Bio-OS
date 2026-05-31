@@ -239,8 +239,22 @@ private boolean evaluateCondition(double value, String operator, double threshol
             return "dead_critical";
         }
 
-        if (activeStates.contains("RecoveryMode")) {
-            return "recovery_mode";
+        if (totalEnergy < 35) {
+            return "low_energy";
+        }
+
+        if ("PruningAlreadyExecuted".equals(lastAction)) {
+            return "pruning_already_executed";
+        }
+
+        if ("Pruning".equals(lastAction)
+                || "PruningFailed".equals(lastAction)
+                || activeStates.contains("PruningMode")) {
+            return "pruned";
+        }
+
+        if (activeStates.contains("ExtremeDroughtMode")) {
+            return "drought_mode";
         }
 
         if (activeStates.contains("HeatStress")) {
@@ -251,24 +265,20 @@ private boolean evaluateCondition(double value, String operator, double threshol
             return "drought_mode";
         }
 
-        if ("PruningAlreadyExecuted".equals(lastAction)) {
-            return "pruning_already_executed";
-        }
-
-        if ("Pruning".equals(lastAction)) {
-            return "pruned";
+        if (activeStates.contains("RecoveryMode")) {
+            return "recovery_mode";
         }
 
         if (activeStates.contains("PhotosynthesisBoost")) {
             return "photosynthesis_boost";
         }
 
-        if (totalEnergy < 40) {
-            return "low_energy";
+        if (activeStates.contains("ColdStress")) {
+            return "cold_stress";
         }
 
-        return "stable";
-    }
+    return "stable";
+}
 
     private double calculateRuleEnergyEffect(double water, double light, double temperature) {
         double totalEffect = 0.0;

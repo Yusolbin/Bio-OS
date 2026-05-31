@@ -381,4 +381,99 @@ tbody tr:hover {
         color: #be123c;
         border: 1px solid #fecdd3;
     }
+
+    .section-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 18px;
+    margin-bottom: 10px;
+}
+
+.section-header h3 {
+    margin: 0 0 4px;
+}
+
+.section-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.rule-list {
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.rule-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.rule-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+}
+
+.rule-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.rule-item {
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 12px;
+    margin-bottom: 10px;
+}
+
+.rule-item:last-child {
+    margin-bottom: 0;
+}
+
+.rule-text {
+    color: #1e293b;
+    font-weight: 700;
+}
+
+.inactive-rule {
+    color: #94a3b8;
+    text-decoration: line-through;
+}
+
+.rule-actions {
+    margin-top: 10px;
+}
+
+.mini-button {
+    min-width: 74px;
+}
+
+.result-card pre {
+    min-height: 74px;
+}
+
+.log-card table {
+    font-size: 14px;
+}
+
+.log-card tbody tr:nth-child(even) {
+    background: #fbfdff;
+}
+
+.effect-row {
+    margin-top: 12px;
+}
+
+.effect-row label {
+    display: block;
+    color: #334155;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.effect-row input {
+    margin-top: 7px;
+}
 }

@@ -21,12 +21,13 @@ public class GeneRuleService {
     }
 
     public GeneRuleResponse createRule(GeneRuleRequest request) {
-        GeneRule geneRule = new GeneRule(
-                request.getFieldName(),
-                request.getOperator(),
-                request.getThreshold(),
-                request.getTargetState()
-        );
+    GeneRule geneRule = new GeneRule(
+            request.getFieldName(),
+            request.getOperator(),
+            request.getThreshold(),
+            request.getTargetState(),
+            request.getEnergyEffect()
+    );
 
         GeneRule savedRule = geneRuleRepository.save(geneRule);
 

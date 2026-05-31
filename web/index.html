@@ -13,7 +13,8 @@
             <p class="eyebrow">BIO-OS v0.2 Prototype</p>
             <h1>Algorithmic Bio-System Simulator</h1>
             <p class="subtitle">
-                C++ 엔진의 생체 상태 데이터를 Web Dashboard와 픽셀아트 식물 시각화로 확장하기 위한 프론트엔드 프로토타입
+                C++ 엔진의 생체 상태 데이터를 Spring Boot API, MySQL, Web Dashboard와 연결하여
+                식물 상태 변화를 시각적으로 분석하는 풀스택 시뮬레이션 대시보드입니다.
             </p>
         </div>
     </header>
@@ -38,9 +39,9 @@
             </label>
 
             <button id="runButton">Run Simulation</button>
-            <button id="randomButton" class="secondary">Run Random Sample</button>
+            <button id="randomButton" class="secondary">Random Sample</button>
             <button id="loadLogsButton" class="secondary">Load DB Logs</button>
-            <button id="resetButton" class="danger">Reset Logs</button>
+            <button id="resetButton" class="danger">Clear Logs</button>
         </section>
 
         <section class="card rule-panel">
@@ -48,6 +49,7 @@
 
             <div class="rule-row">
                 <span>IF</span>
+
                 <select id="ruleField">
                     <option value="Water">Water</option>
                     <option value="Light">Light</option>
@@ -55,10 +57,10 @@
                 </select>
 
                 <select id="ruleOperator">
-                    <option value="<">&lt;</option>
-                    <option value=">">&gt;</option>
-                    <option value="<=">&lt;=</option>
-                    <option value=">=">&gt;=</option>
+                    <option value="LT">&lt;</option>
+                    <option value="GT">&gt;</option>
+                    <option value="LTE">&lt;=</option>
+                    <option value="GTE">&gt;=</option>
                 </select>
 
                 <input id="ruleThreshold" type="number" value="30" />
@@ -68,22 +70,42 @@
                 <input id="ruleState" type="text" value="DroughtMode" />
 
                 <span>= ON</span>
+
+                <label class="effect-label">
+                    Energy Effect
+                    <input id="ruleEnergyEffect" type="number" value="-30" />
+                </label>
             </div>
 
-            <button id="addRuleButton" class="secondary">Add Rule</button>
+            <div class="effect-row">
+                <label>
+                    Energy Effect
+                    <input id="ruleEnergyEffect" type="number" value="40"/>
+                </label>
+            </div>
+
+            <button id="addRuleButton" class="secondary">Save Rule</button>
 
             <div class="rule-list">
-                <h3>Active Rules</h3>
+                <div class="section-header">
+                    <div>
+                        <h3>Gene Rule Registry</h3>
+                        <p>Rules are stored in MySQL and applied during simulation.</p>
+                    </div>
+                </div>
+
                 <ul id="ruleList"></ul>
             </div>
         </section>
 
         <section class="card plant-card">
             <h2>Plant Pixel View</h2>
+
             <div class="plant-stage">
                 <img id="plantImage" src="assets/stable.png" alt="Plant State" />
             </div>
-            <p id="visualState" class="visual-state">visual: stable</p>
+
+            <p id="visualState" class="visual-state">Current Visual State: stable</p>
         </section>
 
         <section class="card result-card">
@@ -94,14 +116,17 @@
                     <span>Tick</span>
                     <strong id="tickValue">0</strong>
                 </div>
+
                 <div>
                     <span>Last Action</span>
                     <strong id="lastActionValue">None</strong>
                 </div>
+
                 <div>
                     <span>Total Energy</span>
                     <strong id="energyValue">100.0</strong>
                 </div>
+
                 <div>
                     <span>Visual State</span>
                     <strong id="visualStateValue">stable</strong>
@@ -117,6 +142,7 @@
 
         <section class="card log-card">
             <h2>Tick History</h2>
+
             <table>
                 <thead>
                 <tr>
@@ -128,6 +154,7 @@
                     <th>Visual</th>
                 </tr>
                 </thead>
+
                 <tbody id="historyTable"></tbody>
             </table>
         </section>

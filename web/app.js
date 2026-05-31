@@ -332,6 +332,7 @@ async function createGeneRule() {
     const operator = document.getElementById("ruleOperator").value;
     const threshold = Number(document.getElementById("ruleThreshold").value);
     const targetState = document.getElementById("ruleState").value.trim();
+    const energyEffect = Number(document.getElementById("ruleEnergyEffect").value);
 
     if (!targetState) {
         alert("State name을 입력해주세요.");
@@ -349,6 +350,7 @@ async function createGeneRule() {
                 operator: operator,
                 threshold: threshold,
                 targetState: targetState,
+                energyEffect: energyEffect,
             }),
         });
 
@@ -385,9 +387,10 @@ async function loadGeneRules() {
 
             const status = rule.active ? "ON" : "OFF";
 
-            ruleText.textContent =
-                `IF ${rule.fieldName} ${rule.operator} ${rule.threshold} THEN ${rule.targetState} = ${status}`;
+            const displayOperator = formatOperator(rule.operator);
 
+            ruleText.textContent =
+                `IF ${rule.fieldName} ${displayOperator} ${rule.threshold} THEN ${rule.targetState} = ${status} / Effect ${rule.energyEffect}`;
             if (!rule.active) {
                 ruleText.classList.add("inactive-rule");
             }
@@ -547,6 +550,23 @@ function renderRules() {
 
 function randomRange(min, max) {
     return min + (max - min) * Math.random();
+}
+
+function formatOperator(operator) {
+    switch (operator) {
+        case "LT":
+            return "<";
+        case "GT":
+            return ">";
+        case "LTE":
+            return "<=";
+        case "GTE":
+            return ">=";
+        case "EQ":
+            return "=";
+        default:
+            return operator;
+    }
 }
 
 loadGeneRules();

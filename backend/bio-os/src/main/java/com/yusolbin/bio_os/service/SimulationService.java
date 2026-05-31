@@ -39,6 +39,18 @@ public class SimulationService {
 
         double totalEnergy = calculateTotalEnergy(water, light, temperature, activeStates);
 
+        double ruleEnergyEffect = calculateRuleEnergyEffect(water, light, temperature);
+
+        totalEnergy += ruleEnergyEffect;
+
+        if (totalEnergy < 0) {
+            totalEnergy = 0;
+        }
+
+        if (totalEnergy > 160) {
+            totalEnergy = 160;
+        }
+
         String lastAction = decideLastAction(activeStates, totalEnergy);
 
         String visualState = decideVisualState(activeStates, lastAction, totalEnergy);
@@ -76,6 +88,10 @@ public class SimulationService {
             .stream()
             .map(SimulationLogResponse::new)
             .toList();
+    }
+
+    public void clearSimulationLogs() {
+        simulationLogRepository.deleteAll();
     }
 
     private List<String> evaluateActiveStates(double water, double light, double temperature) {
@@ -254,8 +270,21 @@ private boolean evaluateCondition(double value, String operator, double threshol
         return "stable";
     }
 
-    public void clearSimulationLogs() {
-        simulationLogRepository.deleteAll();
+    private double calculateRuleEnergyEffect(double water, double light, double temperature) {
+        double totalEffect = 0.0;
+
+        List<GeneRule> activeRules = geneRuleRepository.findByActiveTrue();
+
+        for (GeneRule rule : activeRules) {
+            double value = getEnvironmentValue(rule.getFieldName(), water, light, temperature);
+
+            if (evaluateCondition(value, rule.getOperator(), rule.getThreshold())) {
+                totalEffect += rule.getEnergyEffect();
+            }
+        }
+
+        return totalEffect;
     }
+
 
 }

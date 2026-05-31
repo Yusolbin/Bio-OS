@@ -18,6 +18,7 @@ public class GeneRule {
     private String operator;
     private double threshold;
     private String targetState;
+    private double energyEffect;
 
     private boolean active;
 
@@ -27,11 +28,12 @@ public class GeneRule {
 
     }
 
-    public GeneRule(String fieldName, String operator, double threshold, String targetState) {
+    public GeneRule(String fieldName, String operator, double threshold, String targetState, double energyEffect) {
         this.fieldName = fieldName;
         this.operator = operator;
         this.threshold = threshold;
         this.targetState = targetState;
+        this.energyEffect = energyEffect;
         this.active = true;
         this.createdAt = LocalDateTime.now();
     }
@@ -62,6 +64,10 @@ public class GeneRule {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public double getEnergyEffect() {
+        return energyEffect;
     }
 
     public void toggleActive() {

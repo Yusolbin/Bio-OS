@@ -13,6 +13,7 @@ public class GeneRuleResponse {
     private String targetState;
     private boolean active;
     private LocalDateTime createdAt;
+    private double energyEffect;
 
     public GeneRuleResponse(GeneRule geneRule) {
         this.id = geneRule.getId();
@@ -22,6 +23,7 @@ public class GeneRuleResponse {
         this.targetState = geneRule.getTargetState();
         this.active = geneRule.isActive();
         this.createdAt = geneRule.getCreatedAt();
+        this.energyEffect = geneRule.getEnergyEffect();
     }
 
     public Long getId() {
@@ -50,5 +52,9 @@ public class GeneRuleResponse {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public double getEnergyEffect(){
+        return energyEffect;
     }
 }

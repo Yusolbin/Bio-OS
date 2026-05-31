@@ -6,6 +6,7 @@ public class GeneRuleRequest {
     private String operator;
     private double threshold;
     private String targetState;
+    private double energyEffect;
 
     public GeneRuleRequest() {
     }
@@ -40,5 +41,13 @@ public class GeneRuleRequest {
 
     public void setTargetState(String targetState) {
         this.targetState = targetState;
+    }
+
+    public double getEnergyEffect() {
+        return energyEffect;
+    }
+
+    public void setEnergyEffect(double energyEffect) {
+        this.energyEffect = energyEffect;
     }
 }

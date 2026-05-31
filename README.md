@@ -1,672 +1,563 @@
-# Bio-OS: Algorithmic Bio-System Simulator
+# BIO-OS: Algorithmic Bio-System Simulator
 
-**Bio-OS**는 식물 생체 시스템을 알고리즘으로 시뮬레이션하는 프로젝트입니다.
-C++ 기반 Native Simulation Engine을 만들고, Android 앱에서 JNI로 연결한 뒤, 시뮬레이션 결과를 CSV 데이터셋으로 저장하고 Python AI 모델로 학습하는 전체 파이프라인을 구현했습니다.
+> **BIO-OS**는 식물의 생체 상태를 알고리즘으로 시뮬레이션하고,  
+> C++ Engine, Android JNI Dashboard, Web Dashboard, Spring Boot REST API, MySQL, Python AI Pipeline으로 확장한 풀스택 시뮬레이션 프로젝트입니다.
 
 ---
 
-## Quick Summary
+## 1. Project Overview
 
-Bio-OS는 식물을 하나의 운영체제처럼 모델링합니다.
+BIO-OS는 Water, Light, Temperature 같은 환경 입력값을 기반으로 식물의 상태를 계산하는 생체 시스템 시뮬레이터입니다.
 
-환경 입력값인 **Water, Light, Temperature**가 들어오면 C++ 엔진은 식물 트리 구조를 계산하고, Android 앱은 그 결과를 Dashboard와 Plant Structure View로 시각화합니다. 이후 앱에서 생성된 CSV 데이터를 Python으로 학습하여 환경 조건에 따른 식물 시스템의 행동을 예측합니다.
+단순한 조건문 기반 시뮬레이션이 아니라,  
+BFS, DFS, PriorityQueue 같은 자료구조와 알고리즘을 식물 생체 흐름에 적용하고,  
+그 결과를 Android와 Web Dashboard에서 시각적으로 확인할 수 있도록 설계했습니다.
+
+현재 BIO-OS는 다음 흐름으로 확장되었습니다.
 
 ```text
-Environment Input
-→ C++ Bio-OS Engine
-→ JNI Native Bridge
-→ Android Dashboard
-→ CSV Dataset Export
-→ Python AI Training
-→ AI Recommendation UI
+C++ Simulation Engine
+→ Android JNI Dashboard
+→ CSV Log
+→ Python AI Training Pipeline
+→ Web Dashboard
+→ Spring Boot REST API
+→ MySQL Database
 ```
 
 ---
 
-## Highlights
+## 2. Key Features
 
-* C++17 기반 Native Simulation Engine 구현
-* Tree 구조 기반 식물 모델링
-* BFS 기반 수분 분배 알고리즘
-* DFS 기반 에너지 평가 알고리즘
-* PriorityQueue 기반 가지치기 전략
-* Rule-based Gene State Transition 구현
-* Android JNI 연동
-* Android Canvas 기반 Plant Structure View 구현
-* Tick History 기록 및 CSV Export 기능 구현
-* Python scikit-learn 기반 AI 학습 파이프라인 구축
-* Android 앱 내 AI Recommendation UI 구현
+### C++ Simulation Engine
 
----
-
-## Tech Stack
-
-| Area            | Tech                                 |
-| --------------- | ------------------------------------ |
-| Core Engine     | C++17, STL                           |
-| Algorithms      | BFS, DFS, PriorityQueue, Tree        |
-| Android         | Java, Android Studio, JNI, CMake     |
-| Visualization   | Android Canvas Custom View           |
-| Data            | CSV, JSON Snapshot                   |
-| AI              | Python, pandas, scikit-learn, joblib |
-| Version Control | Git, GitHub                          |
-
----
-
-
-## Project Overview
-
-Bio-OS는 식물 생체 시스템을 알고리즘 기반으로 분석하고 시뮬레이션하는 포트폴리오 프로젝트입니다.
-
-식물은 Root, Stem, Leaf, RootTip 노드로 구성된 Tree 구조로 표현되며, 각 tick마다 환경 입력에 따라 수분, 에너지, 생존 점수, 가지치기 여부가 계산됩니다.
-
-Android 앱에서는 C++ 엔진을 JNI로 호출하고, 결과를 Dashboard 형태로 시각화합니다. 또한 시뮬레이션 결과를 CSV로 저장하여 Python AI 모델 학습에 사용합니다.
-
----
-
-## Core Features
-
-### Native C++ Simulation Engine
-
-* PlantTree 기반 식물 구조 관리
-* Node별 Water, Energy, Survival Score 계산
-* BFS 기반 Water Distribution
-* DFS 기반 Energy Evaluation
-* PriorityQueue 기반 Pruning Strategy
-* Gene Rule 기반 State Transition
-* JSON Snapshot 생성
-
-### Android JNI Dashboard
-
-* C++ 엔진을 Android Java 앱에서 호출
-* Summary / Active States / Nodes / Logs 표시
-* Plant Structure View 시각화
-* Tick History 기록
-* CSV 저장 기능
-* AI Recommendation 표시
-
-### AI Training Pipeline
-
-* Android 앱에서 CSV Dataset 생성
-* Python pandas로 데이터 로드
-* scikit-learn DecisionTreeClassifier 학습
-* joblib으로 모델 저장
-* 환경 입력값 기반 lastAction 예측
-
----
-
-## System Architecture
-
-```text
-[Water / Light / Temperature]
-              |
-              v
-      [C++ Bio-OS Engine]
-              |
-              v
-       [JNI Native Bridge]
-              |
-              v
-      [Android Dashboard]
-              |
-              v
-       [CSV Dataset Export]
-              |
-              v
-       [Python AI Training]
-              |
-              v
-      [AI Recommendation UI]
-```
-
----
-
-## Algorithms
-
-### BFS Water Distribution
-
-Root에서 시작하여 식물 트리의 각 노드로 수분을 분배합니다.
-
-### DFS Energy Evaluation
-
-Leaf의 광합성량과 각 노드의 유지 비용을 기반으로 전체 에너지 균형을 계산합니다.
-
-### PriorityQueue Pruning
-
-Leaf 노드의 생존 점수를 계산하고, 가장 생존 가치가 낮은 Leaf를 우선적으로 Pruning 처리합니다.
-
-### Rule-based State Transition
-
-환경 조건에 따라 DroughtMode, PhotosynthesisBoost, HeatStress, PruningMode, RecoveryMode 등의 상태를 활성화합니다.
-
-예시:
-
-```text
-IF Water < 30 THEN DroughtMode = ON
-IF Light > 70 THEN PhotosynthesisBoost = ON
-IF Temperature > 35 THEN HeatStress = ON
-IF Water < 10 THEN PruningMode = ON
-IF Water > 100 THEN RecoveryMode = ON
-```
-
----
-
-## Android Dashboard
-
-현재 Android 앱은 다음 기능을 제공합니다.
-
-* Run Next Tick
-* Run Random 100 Ticks
-* Run Balanced Dataset
-* Save Tick History CSV
-* Reset Simulation
-* Summary
-* Active States
-* AI Recommendation
-* Plant Structure View
-* Nodes
-* Tick History
-* Algorithm Logs
-* Raw JSON Toggle
-
----
-
-## AI Training Result Example
-
-Balanced Dataset 학습 결과 예시:
-
-```text
-[Action Distribution]
-Pruning                   115
-PruningAlreadyExecuted     36
-Stable                     30
-
-[Training Result]
-Accuracy: 1.0
-```
-
-Prediction 예시:
-
-```text
-Water=5.0, Light=85.0, Temp=34.0 => Predicted Action: PruningAlreadyExecuted
-Water=15.0, Light=80.0, Temp=32.0 => Predicted Action: Pruning
-Water=120.0, Light=75.0, Temp=26.0 => Predicted Action: Stable
-Water=150.0, Light=80.0, Temp=28.0 => Predicted Action: Stable
-Water=60.0, Light=40.0, Temp=20.0 => Predicted Action: Pruning
-```
-
----
-
-## Screenshots
-
-> 아래 이미지는 추후 `docs/images/` 폴더에 추가 예정입니다.
+- BFS 기반 WaterDistributor
+- DFS 기반 EnergyEvaluator
+- PriorityQueue 기반 PruningStrategy
+- RuleParser
+- StateTransitionEngine
+- TickSystem
+- SimulationLogger
+- EngineFacade
 
 ### Android Dashboard
 
-![Android Dashboard](docs/images/dashboard.png)
+- JNI를 통한 C++ Engine 호출
+- Tick 기반 시뮬레이션 실행
+- Plant Structure View
+- Plant Pixel View
+- Pixel / Structure View Mode 전환
+- CSV Tick History 저장
 
-### Plant Structure View
+### Python AI Pipeline
 
-![Plant Structure View](docs/images/plant_structure_view.png)
+- Android에서 저장한 CSV 로그 기반 학습
+- `waterInput`, `light`, `temperature` 기반 `lastAction` 예측
+- DecisionTreeClassifier 기반 초기 모델 구현
+- 모델 및 LabelEncoder 저장
 
-### AI Recommendation
+### Web Dashboard
 
-![AI Recommendation](docs/images/ai_recommendation.png)
+- Water / Light / Temperature 입력
+- Run Simulation
+- Random Sample
+- Load DB Logs
+- Clear Logs
+- Plant Pixel View
+- Simulation Result Card
+- Active States
+- Matched Rules
+- Risk Level
+- Energy Delta
+- Recommendation
+- Tick History Table
+- Gene Rule Registry
 
-### CSV Dataset
+### Spring Boot Backend
 
-![CSV Dataset](docs/images/csv_dataset.png)
-
-### Python AI Training Result
-
-![AI Training Result](docs/images/ai_training_result.png)
+- MVC 계층 구조 적용
+- Request / Response DTO 분리
+- REST API 구현
+- MySQL 연동
+- JPA Repository 사용
+- Simulation Log 저장 / 조회 / 삭제
+- GeneRule 저장 / 조회 / 활성화 토글 / 삭제
+- 기본 GeneRule Seeder 자동 등록
+- DB 기반 GeneRule을 실제 시뮬레이션 계산에 반영
 
 ---
 
-## Project Structure
+## 3. Architecture
+
+```mermaid
+flowchart LR
+    A[C++ Simulation Engine] --> B[Android JNI Dashboard]
+    B --> C[CSV Tick History]
+    C --> D[Python AI Training]
+
+    E[Web Dashboard] --> F[Spring Boot REST API]
+    F --> G[SimulationService]
+    G --> H[(MySQL simulation_log)]
+    G --> I[(MySQL gene_rule)]
+
+    I --> G
+    G --> F
+    F --> E
+```
+
+---
+
+## 4. Tech Stack
+
+### Core Engine
+
+- C++
+- STL
+- BFS
+- DFS
+- PriorityQueue
+
+### Android
+
+- Java
+- Android Studio
+- JNI
+- Custom View
+- Canvas
+- Pixel Art Assets
+
+### AI
+
+- Python
+- pandas
+- scikit-learn
+- joblib
+- DecisionTreeClassifier
+
+### Web
+
+- HTML
+- CSS
+- JavaScript
+- Fetch API
+
+### Backend
+
+- Java
+- Spring Boot
+- Spring Web
+- Spring Data JPA
+- MySQL
+- Maven
+- DTO
+- MVC Architecture
+
+---
+
+## 5. Project Structure
 
 ```text
 Bio_OS/
 ├─ app/
-│  └─ src/
-│     └─ main/
-│        ├─ java/com/cookandroid/bioosapp/
-│        │  ├─ MainActivity.java
-│        │  ├─ BioOSEngine.java
-│        │  └─ PlantTreeView.java
-│        └─ cpp/
-│           ├─ CMakeLists.txt
-│           ├─ native-lib.cpp
-│           └─ bio_os_engine/
-│              ├─ include/
-│              └─ src/
+│  └─ Android Dashboard
 │
-├─ bio_os_engine/
-│  ├─ include/
-│  └─ src/
+├─ ai/
+│  ├─ bio_os_tick_history.csv
+│  ├─ train_action_model.py
+│  ├─ predict_action.py
+│  ├─ bio_os_action_model.pkl
+│  └─ bio_os_label_encoder.pkl
 │
-└─ ai/
-   ├─ bio_os_tick_history.csv
-   ├─ train_action_model.py
-   ├─ predict_action.py
-   ├─ bio_os_action_model.pkl
-   └─ bio_os_label_encoder.pkl
+├─ web/
+│  ├─ index.html
+│  ├─ style.css
+│  ├─ app.js
+│  └─ assets/
+│
+└─ backend/
+   └─ bio-os/
+      └─ src/main/java/com/yusolbin/bio_os/
+         ├─ controller/
+         │  ├─ HomeController.java
+         │  ├─ SimulationController.java
+         │  └─ GeneRuleController.java
+         │
+         ├─ service/
+         │  ├─ SimulationService.java
+         │  └─ GeneRuleService.java
+         │
+         ├─ dto/
+         │  ├─ SimulationRequest.java
+         │  ├─ SimulationResponse.java
+         │  ├─ SimulationLogResponse.java
+         │  ├─ GeneRuleRequest.java
+         │  └─ GeneRuleResponse.java
+         │
+         ├─ model/
+         │  ├─ SimulationLog.java
+         │  └─ GeneRule.java
+         │
+         ├─ repository/
+         │  ├─ SimulationLogRepository.java
+         │  └─ GeneRuleRepository.java
+         │
+         ├─ config/
+         │  └─ DefaultGeneRuleSeeder.java
+         │
+         └─ BioOsApplication.java
 ```
 
 ---
 
-## Current Status
+## 6. GeneRule System
+
+BIO-OS는 시뮬레이션 규칙을 코드에 고정하지 않고,  
+MySQL에 저장된 GeneRule 데이터를 기반으로 상태를 계산합니다.
+
+예시 GeneRule:
 
 ```text
-Bio-OS v0.1 Prototype Complete
+IF Water < 30 THEN DroughtMode = ON / Effect -30
+IF Light > 70 THEN PhotosynthesisBoost = ON / Effect +20
+IF Temperature > 35 THEN HeatStress = ON / Effect -20
+IF Water < 10 THEN PruningMode = ON / Effect -35
+IF Water > 100 THEN RecoveryMode = ON / Effect +25
+IF Water < 20 THEN ExtremeDroughtMode = ON / Effect -40
 ```
 
-Implemented:
-
-* C++ Engine
-* JNI Bridge
-* Android Dashboard
-* Plant Visualization
-* CSV Export
-* Python AI Training
-* AI Prediction Test
-* AI Recommendation UI
-
----
-
-## Detailed Development Notes
-
-## 1. 개발 배경
-
-컴퓨터공학은 다른 분야와 결합될 때 더 강력해진다고 생각했습니다. Bio-OS는 이러한 관점에서 생명 시스템을 알고리즘과 소프트웨어 구조로 해석해보는 프로젝트입니다.
-
-단순히 식물을 화면에 보여주는 앱이 아니라, 식물 내부에서 일어나는 자원 분배, 에너지 평가, 가지치기, 회복 조건을 자료구조와 알고리즘으로 설계하고, 그 결과를 모바일 환경에서 시각화하는 것을 목표로 했습니다.
-
----
-
-## 2. 문제 정의
-
-식물은 환경에 따라 계속 상태가 변합니다.
-
-예를 들어:
-
-* 물이 부족하면 DroughtMode가 활성화됩니다.
-* 빛이 충분하면 PhotosynthesisBoost가 활성화됩니다.
-* 온도가 높으면 HeatStress가 발생합니다.
-* 특정 조건에서는 생존 점수가 낮은 Leaf가 가지치기됩니다.
-* 물이 충분히 공급되면 회복 상태로 전환됩니다.
-
-이러한 변화를 단순 if문 모음이 아니라, Tree 구조와 알고리즘 기반의 시뮬레이션 엔진으로 구현하는 것이 핵심 문제였습니다.
-
----
-
-## 3. 시스템 설계
-
-Bio-OS는 크게 네 개의 계층으로 구성됩니다.
+각 GeneRule은 다음 정보를 가집니다.
 
 ```text
-C++ Core Engine
-Android JNI Layer
-Android Dashboard UI
-Python AI Pipeline
+fieldName
+operator
+threshold
+targetState
+energyEffect
+active
+createdAt
 ```
 
-### C++ Core Engine
-
-핵심 시뮬레이션 로직을 담당합니다.
-
-* PlantNode
-* PlantTree
-* Environment
-* TickSystem
-* WaterDistributor
-* EnergyEvaluator
-* PruningStrategy
-* RuleParser
-* StateTransitionEngine
-* SimulationLogger
-* EngineFacade
-
-### Android JNI Layer
-
-C++ 엔진과 Android Java 앱을 연결합니다.
-
-* Java에서 native method 선언
-* C++에서 JNI 함수 구현
-* CMake로 Native Library 빌드
-* `System.loadLibrary("bio_os_native")`로 로드
-
-### Android Dashboard UI
-
-엔진 결과를 사용자가 이해할 수 있게 시각화합니다.
-
-* Summary
-* Active States
-* AI Recommendation
-* Plant Structure View
-* Nodes
-* Tick History
-* Algorithm Logs
-
-### Python AI Pipeline
-
-Android 앱에서 생성한 CSV를 기반으로 AI 모델을 학습합니다.
-
-* CSV 로드
-* Feature / Label 분리
-* Label Encoding
-* DecisionTreeClassifier 학습
-* 모델 저장
-* 예측 테스트
+SimulationService는 `active=true`인 GeneRule만 조회하고,  
+조건을 만족한 룰의 `targetState`를 activeStates에 추가하며,  
+`energyEffect`를 totalEnergy 계산에 반영합니다.
 
 ---
 
-## 4. 구현 과정
+## 7. Simulation Analysis
 
-### Step 1. C++ Engine 구현
+BIO-OS는 단순히 결과값만 반환하지 않고,  
+결과가 발생한 원인까지 함께 반환합니다.
 
-식물을 Tree 구조로 모델링했습니다.
+Simulation Response 예시:
 
-각 노드는 다음 정보를 가집니다.
+```json
+{
+  "logId": 66,
+  "tick": 1,
+  "water": 5.0,
+  "light": 80.0,
+  "temperature": 32.0,
+  "totalEnergy": 0.0,
+  "lastAction": "Pruning",
+  "visualState": "dead_critical",
+  "activeStates": [
+    "ExtremeDroughtMode",
+    "DroughtMode",
+    "PhotosynthesisBoost",
+    "PruningMode"
+  ],
+  "energyDelta": -85.0,
+  "matchedRules": [
+    "IF Water < 30.0 THEN DroughtMode = ON / Effect -30.0",
+    "IF Light > 70.0 THEN PhotosynthesisBoost = ON / Effect 20.0",
+    "IF Water < 10.0 THEN PruningMode = ON / Effect -35.0",
+    "IF Water < 20.0 THEN ExtremeDroughtMode = ON / Effect -40.0"
+  ],
+  "riskLevel": "CRITICAL",
+  "recommendation": "Energy level is critically low. Increase water input and reduce stress conditions immediately."
+}
+```
 
-* id
-* type
-* parentId
-* water
-* maxWater
-* energy
-* maintenanceCost
-* photosynthesisRate
-* survivalScore
-* status
-
-### Step 2. 알고리즘 적용
-
-BFS, DFS, PriorityQueue를 각각 다른 생체 시스템 로직에 연결했습니다.
-
-| Algorithm     | Role                            |
-| ------------- | ------------------------------- |
-| BFS           | Root에서 각 노드로 Water 분배           |
-| DFS           | Leaf 기반 Energy 계산               |
-| PriorityQueue | Survival Score가 낮은 Leaf Pruning |
-| Rule Parser   | 환경 조건 기반 상태 전이                  |
-
-### Step 3. Android JNI 연결
-
-C++ 엔진을 Android 앱에서 실행하기 위해 JNI Bridge를 구현했습니다.
-
-구현 중 해결한 문제:
-
-* CMake source file 누락
-* `PruningStrategy.cpp` link error
-* JNI 함수명 package mismatch 가능성 점검
-* Java class duplicate error 해결
-* AndroidManifest MainActivity ClassNotFound 해결
-
-### Step 4. Android Dashboard 구현
-
-초기에는 JSON을 그대로 TextView에 출력했습니다. 이후 Dashboard 형태로 개선했습니다.
-
-개선 과정:
-
-1. JSON Raw 출력
-2. Summary 파싱
-3. Active States 파싱
-4. Nodes 파싱
-5. Plant Structure View 추가
-6. Tick History 추가
-7. CSV 저장 기능 추가
-8. AI Recommendation 추가
-
-### Step 5. Plant Structure View 구현
-
-Android Canvas Custom View를 사용해 식물 구조를 시각화했습니다.
-
-* Root, Stem, Leaf, RootTip을 원으로 표시
-* Parent-Child 관계를 선으로 연결
-* Alive / Pruned / Wilted 상태를 색상으로 구분
-
-### Step 6. CSV Dataset 생성
-
-앱 내부 저장소에 CSV를 저장했습니다.
+이를 통해 BIO-OS는 다음 정보를 추적할 수 있습니다.
 
 ```text
-/data/data/com.cookandroid.bioosapp/files/bio_os_tick_history.csv
+입력 환경값
+→ 매칭된 GeneRule
+→ 에너지 변화량
+→ 활성화된 상태
+→ 위험도
+→ 추천 조치
+→ 시각화 상태
 ```
 
-이 파일을 Android Studio Device Explorer에서 추출하여 Python 학습에 사용했습니다.
+---
 
-### Step 7. Python AI 학습
+## 8. REST API
 
-처음에는 데이터가 Stable에 치우쳐 모델이 모든 입력을 Stable로 예측했습니다.
+### Simulation API
 
-이를 해결하기 위해 Balanced Dataset 생성 기능을 추가했습니다.
+#### Run Simulation
 
-기존 방식:
+```http
+POST /api/simulations/run
+```
+
+Request:
+
+```json
+{
+  "water": 5,
+  "light": 80,
+  "temperature": 32
+}
+```
+
+Response:
+
+```json
+{
+  "logId": 1,
+  "tick": 1,
+  "totalEnergy": 0.0,
+  "lastAction": "Pruning",
+  "visualState": "dead_critical",
+  "riskLevel": "CRITICAL",
+  "energyDelta": -85.0,
+  "activeStates": [
+    "DroughtMode",
+    "PhotosynthesisBoost",
+    "PruningMode",
+    "ExtremeDroughtMode"
+  ],
+  "matchedRules": [
+    "IF Water < 30.0 THEN DroughtMode = ON / Effect -30.0",
+    "IF Light > 70.0 THEN PhotosynthesisBoost = ON / Effect 20.0",
+    "IF Water < 10.0 THEN PruningMode = ON / Effect -35.0",
+    "IF Water < 20.0 THEN ExtremeDroughtMode = ON / Effect -40.0"
+  ],
+  "recommendation": "Energy level is critically low. Increase water input and reduce stress conditions immediately."
+}
+```
+
+#### Get Simulation Logs
+
+```http
+GET /api/simulations/logs
+```
+
+#### Clear Simulation Logs
+
+```http
+DELETE /api/simulations/logs
+```
+
+---
+
+### GeneRule API
+
+#### Create GeneRule
+
+```http
+POST /api/rules
+```
+
+Request:
+
+```json
+{
+  "fieldName": "Water",
+  "operator": "LT",
+  "threshold": 20,
+  "targetState": "ExtremeDroughtMode",
+  "energyEffect": -40
+}
+```
+
+#### Get GeneRules
+
+```http
+GET /api/rules
+```
+
+#### Toggle GeneRule Active State
+
+```http
+PATCH /api/rules/{id}/toggle
+```
+
+#### Delete GeneRule
+
+```http
+DELETE /api/rules/{id}
+```
+
+---
+
+## 9. How to Run
+
+### 1. Start MySQL
+
+Create database:
+
+```sql
+CREATE DATABASE bio_os;
+```
+
+---
+
+### 2. Configure Spring Boot
+
+Edit:
 
 ```text
-하나의 엔진에서 100틱 연속 실행
-→ 상태가 누적되어 특정 class로 쏠림
+backend/bio-os/src/main/resources/application.properties
 ```
 
-개선 방식:
+Example:
+
+```properties
+spring.application.name=BIO-OS
+
+server.port=8080
+
+spring.datasource.url=jdbc:mysql://localhost:3306/bio_os?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+spring.datasource.username=root
+spring.datasource.password=YOUR_PASSWORD
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+```
+
+---
+
+### 3. Run Spring Boot Backend
+
+```bat
+cd /d D:\CoreSync\Bio_OS\backend\bio-os
+mvnw.cmd spring-boot:run
+```
+
+Backend server:
 
 ```text
-각 sample마다 엔진 초기화
-→ 다양한 환경 조건을 독립적으로 테스트
-→ Pruning / Stable 데이터 분포 개선
+http://localhost:8080
 ```
 
 ---
 
-## 5. 주요 트러블슈팅
+### 4. Open Web Dashboard
 
-### 1. Java Duplicate Class Error
-
-문제:
+Open:
 
 ```text
-Duplicate class found: BioOSEngine
+D:\CoreSync\Bio_OS\web\index.html
 ```
 
-원인:
-
-`BioOSEngine.java`가 패키지 폴더 안과 java 루트에 중복 생성되어 있었습니다.
-
-해결:
-
-정상 위치만 남겼습니다.
+The Web Dashboard calls the Spring Boot API at:
 
 ```text
-app/src/main/java/com/cookandroid/bioosapp/BioOSEngine.java
+http://localhost:8080
 ```
 
 ---
 
-### 2. C++ Link Error
+### 5. Test API with curl
 
-문제:
+```bat
+curl -X POST http://localhost:8080/api/simulations/run -H "Content-Type: application/json" -d "{\"water\":5,\"light\":80,\"temperature\":32}"
+```
+
+---
+
+## 10. Screenshots
+
+### Web Dashboard
+
+> Add screenshot here.
 
 ```text
-undefined symbol: PruningStrategy::pruneLowestValueLeaf(PlantTree&)
+docs/screenshots/web-dashboard.png
 ```
 
-원인:
+### Gene Rule Registry
 
-`PruningStrategy.cpp`가 CMake 빌드 대상에 포함되지 않았습니다.
-
-해결:
-
-`src/algorithms/PruningStrategy.cpp` 위치를 수정하고 CMake source list에 포함되도록 설정했습니다.
-
----
-
-### 3. MainActivity ClassNotFound
-
-문제:
+> Add screenshot here.
 
 ```text
-ClassNotFoundException: com.cookandroid.bioosapp.MainActivity
+docs/screenshots/gene-rule-registry.png
 ```
 
-원인:
+### Android Pixel View
 
-`MainActivity.java`가 올바른 패키지 위치에 없었습니다.
-
-해결:
-
-아래 위치에 파일을 생성했습니다.
+> Add screenshot here.
 
 ```text
-app/src/main/java/com/cookandroid/bioosapp/MainActivity.java
+docs/screenshots/android-pixel-view.png
 ```
 
----
+### Spring Boot API Response
 
-### 4. JSON Node Parsing 문제
-
-문제:
-
-Nodes 섹션에 `No plant nodes` 또는 `Unknown`이 출력되었습니다.
-
-원인:
-
-JSON 구조에서 노드 배열 위치가 예상과 달랐습니다.
-
-해결:
-
-`nodes`, `plantNodes`, `plant.nodes`, `plant` 배열을 모두 탐색하도록 파서 로직을 개선했습니다.
-
----
-
-### 5. AI Training Class Imbalance
-
-문제:
-
-처음 학습 데이터는 대부분 Stable이어서 모든 예측이 Stable로 나왔습니다.
-
-해결:
-
-Balanced Dataset 생성 버튼을 추가하고, 각 샘플마다 엔진을 초기화하여 독립 샘플을 생성했습니다.
-
----
-
-### 6. train_test_split stratify Error
-
-문제:
+> Add screenshot here.
 
 ```text
-The least populated class in y has only 1 member
+docs/screenshots/api-response.png
 ```
 
-원인:
-
-특정 class가 1개뿐인데 stratify split을 사용했습니다.
-
-해결:
-
-class count가 2개 미만이면 stratify를 자동으로 비활성화하도록 수정했습니다.
-
 ---
 
-## 6. 배운 점
-
-이 프로젝트를 통해 다음을 학습했습니다.
-
-* C++ 기반 시뮬레이션 엔진 설계
-* 자료구조와 알고리즘을 실제 도메인 문제에 적용하는 방법
-* BFS / DFS / PriorityQueue의 실전 활용
-* Android JNI와 Native Library 연동
-* CMake 기반 Android Native Build
-* JSON Snapshot 설계와 파싱
-* Android Canvas Custom View 구현
-* 앱 내부 저장소 파일 저장
-* CSV Dataset 생성
-* Python AI 학습 파이프라인 구축
-* 데이터 불균형 문제와 학습 결과 해석
-* 포트폴리오 프로젝트를 단계적으로 확장하는 방법
-
----
-
-## 7. 향후 개선 계획
-
-* AI 모델을 Android 앱에 직접 탑재하거나 서버 API로 연결
-* Spring Boot 서버를 통해 Python 모델 예측 API 제공
-* MySQL에 시뮬레이션 로그 저장
-* OpenGL 기반 식물 성장 애니메이션 구현
-* 데이터셋 자동 생성 품질 개선
-* AI Recommendation 고도화
-* 더 다양한 생체 노드 타입 추가
-* UI Bio Terminal Theme 적용
-* 포트폴리오 데모 영상 제작
-
----
-
-## Screenshots
-
-아래 이미지는 Bio-OS Android 앱, CSV 데이터셋, Python AI 학습 결과를 보여줍니다.
-
----
-
-### Android Dashboard
-
-Bio-OS Android 앱의 메인 대시보드입니다.  
-C++ Native Engine을 JNI로 연결하여 현재 tick, total energy, alive/pruned node 수, last action 등을 표시합니다.
-
-![Android Dashboard](docs/images/dashboard.png)
-
----
-
-### Plant Structure View
-
-Android Canvas 기반으로 구현한 식물 구조 시각화 화면입니다.  
-Root, Stem, Leaf, RootTip 노드를 표시하고, Alive / Pruned / Wilted 상태를 색상으로 구분합니다.
-
-![Plant Structure View](docs/images/plant_structure_view.png)
-
----
-
-### AI Recommendation
-
-엔진 결과와 환경 입력값을 기반으로 현재 위험도, 원인, 추천 행동을 표시하는 AI Recommendation 화면입니다.
-
-![AI Recommendation](docs/images/ai_recommendation.png)
-
----
-
-### CSV Dataset
-
-Android 앱에서 생성한 tick history CSV 데이터셋입니다.  
-각 row는 하나의 simulation sample이며, AI 학습에 사용됩니다.
-
-주요 컬럼:
-
-- tick
-- lastAction
-- totalEnergy
-- aliveNodes
-- prunedNodes
-- waterInput
-- light
-- temperature
-
-![CSV Dataset](docs/images/csv_dataset.png)
-
----
-
-### Python AI Training Result
-
-Android 앱에서 생성한 CSV 데이터를 Python으로 학습한 결과입니다.  
-pandas와 scikit-learn을 사용해 `waterInput`, `light`, `temperature`를 기반으로 `lastAction`을 예측합니다.
-
-![Python AI Training Result](docs/images/ai_training_result.png)
-
-# Final Note
-
-Bio-OS는 단순한 알고리즘 실습이 아니라, C++ 엔진, Android 앱, 데이터셋 생성, Python AI 학습까지 연결한 end-to-end 포트폴리오 프로젝트입니다.
+## 11. Current Progress
 
 ```text
-Algorithm → Simulation → Visualization → Dataset → AI → Recommendation
+✅ C++ Simulation Engine
+✅ BFS / DFS / PriorityQueue algorithm modules
+✅ Android JNI connection
+✅ Android Dashboard
+✅ Plant Structure View
+✅ Plant Pixel View
+✅ Pixel / Structure View Mode Toggle
+✅ CSV Tick History
+✅ Python AI Training Pipeline
+✅ Web Dashboard Prototype
+✅ Spring Boot REST API
+✅ MySQL integration
+✅ Simulation Log save / load / clear
+✅ GeneRule save / load / toggle / delete
+✅ Default GeneRule Seeder
+✅ energyEffect-based simulation
+✅ matchedRules tracking
+✅ riskLevel and recommendation response
+✅ Web Dashboard analysis display
 ```
 
-이 흐름을 하나의 프로젝트 안에서 구현했다는 점이 핵심입니다.
+---
+
+## 12. Future Work
+
+```text
+⬜ Connect C++ Engine directly to Spring Boot Backend
+⬜ Add AI prediction API
+⬜ Improve GeneRule effect policy
+⬜ Add Simulation Scenario Presets
+⬜ Add authentication for dashboard management
+⬜ Improve Web Dashboard responsive layout
+⬜ Add chart visualization for totalEnergy trends
+⬜ Deploy backend and dashboard
+```
+
+---
+
+## 13. Development Logs
+
+- Velog 01: C++ Engine, Android Dashboard, Web Prototype
+- Velog 02: Web Dashboard, Spring Boot, MySQL 연결
+- Velog 03: GeneRule energyEffect, matchedRules, riskLevel 분석 대시보드 예정
+
+---
+
+## 14. Author
+
+**Yusolbin**
+
+GitHub: https://github.com/yusolbin
+

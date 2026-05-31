@@ -29,18 +29,32 @@ public class SimulationLog {
 
     private LocalDateTime createdAt;
 
+    private double energyDelta;
+
+    @jakarta.persistence.Column(columnDefinition = "TEXT")
+    private String matchedRules;
+
+    @jakarta.persistence.Column(columnDefinition = "TEXT")
+    private String recommendation;
+
+private String riskLevel;
+
     public SimulationLog() {
     }
 
     public SimulationLog(
-            int tick,
-            double water,
-            double light,
-            double temperature,
-            double totalEnergy,
-            String lastAction,
-            String visualState,
-            String activeStates
+        int tick,
+        double water,
+        double light,
+        double temperature,
+        double totalEnergy,
+        String lastAction,
+        String visualState,
+        String activeStates,
+        double energyDelta,
+        String matchedRules,
+        String riskLevel,
+        String recommendation
     ) {
         this.tick = tick;
         this.water = water;
@@ -50,6 +64,10 @@ public class SimulationLog {
         this.lastAction = lastAction;
         this.visualState = visualState;
         this.activeStates = activeStates;
+        this.energyDelta = energyDelta;
+        this.matchedRules = matchedRules;
+        this.riskLevel = riskLevel;
+        this.recommendation = recommendation;
         this.createdAt = LocalDateTime.now();
     }
 
@@ -91,5 +109,21 @@ public class SimulationLog {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public double getEnergyDelta() {
+    return energyDelta;
+    }
+
+    public String getMatchedRules() {
+        return matchedRules;
+    }
+
+    public String getRiskLevel() {
+        return riskLevel;
+    }
+
+    public String getRecommendation() {
+        return recommendation;
     }
 }

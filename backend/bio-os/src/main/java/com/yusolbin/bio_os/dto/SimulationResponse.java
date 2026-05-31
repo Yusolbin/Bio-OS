@@ -6,13 +6,22 @@ public class SimulationResponse {
 
     private Long logId;
     private int tick;
+
     private double water;
     private double light;
     private double temperature;
+
     private double totalEnergy;
+
     private String lastAction;
     private String visualState;
+
     private List<String> activeStates;
+
+    private double energyDelta;
+    private List<String> matchedRules;
+    private String riskLevel;
+    private String recommendation;
 
     public SimulationResponse() {
     }
@@ -26,7 +35,11 @@ public class SimulationResponse {
             double totalEnergy,
             String lastAction,
             String visualState,
-            List<String> activeStates
+            List<String> activeStates,
+            double energyDelta,
+            List<String> matchedRules,
+            String riskLevel,
+            String recommendation
     ) {
         this.logId = logId;
         this.tick = tick;
@@ -37,6 +50,10 @@ public class SimulationResponse {
         this.lastAction = lastAction;
         this.visualState = visualState;
         this.activeStates = activeStates;
+        this.energyDelta = energyDelta;
+        this.matchedRules = matchedRules;
+        this.riskLevel = riskLevel;
+        this.recommendation = recommendation;
     }
 
     public Long getLogId() {
@@ -73,5 +90,21 @@ public class SimulationResponse {
 
     public List<String> getActiveStates() {
         return activeStates;
+    }
+
+    public double getEnergyDelta() {
+        return energyDelta;
+    }
+
+    public List<String> getMatchedRules() {
+        return matchedRules;
+    }
+
+    public String getRiskLevel() {
+        return riskLevel;
+    }
+
+    public String getRecommendation() {
+        return recommendation;
     }
 }

@@ -45,6 +45,8 @@ const activeStatesBox = document.getElementById("activeStatesBox");
 const recommendationBox = document.getElementById("recommendationBox");
 const historyTable = document.getElementById("historyTable");
 
+const matchedRulesBox = document.getElementById("matchedRulesBox");
+
 runButton.addEventListener("click", () => {
     runSimulationFromInput();
 });
@@ -283,6 +285,14 @@ function renderResult(result) {
             .join("\n");
     }
 
+    if (!result.matchedRules || result.matchedRules.length === 0){
+        matchedRulesBox.textContent = "No matched rules.";
+    }else{
+        matchedRulesBox.textContent = result.matchedRules
+            .map((rule) => `• ${rule}`)
+            .join("\n");
+    }
+
     recommendationBox.textContent = makeRecommendation(result);
 }
 
@@ -389,9 +399,10 @@ async function loadGeneRules() {
 
             const displayOperator = formatOperator(rule.operator);
 
-            ruleText.textContent =
-                `IF ${rule.fieldName} ${displayOperator} ${rule.threshold} THEN ${rule.targetState} = ${status} / Effect ${rule.energyEffect}`;
-            if (!rule.active) {
+            recommendationBox.textContent =
+                result.recommendation || makeRecommendation(result);
+            
+                if (!rule.active) {
                 ruleText.classList.add("inactive-rule");
             }
 

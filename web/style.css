@@ -575,3 +575,11 @@ tbody tr:hover {
     min-height: 58px;
     white-space: pre-wrap;
 }
+
+.clickable-row {
+    cursor: pointer;
+}
+
+.clickable-row:hover {
+    background: #eff6ff;
+}

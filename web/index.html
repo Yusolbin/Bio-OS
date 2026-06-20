@@ -68,6 +68,7 @@
             </label>
 
             <button id="runGrowthButton">Run Growth Simulation</button>
+            <button id="loadGrowthSimulationsButton" class="secondary">Load Growth Simulations</button>
         </section>
 
         <section class="card rule-panel">
@@ -251,6 +252,26 @@
                     </thead>
 
                     <tbody id="growthTimelineTable"></tbody>
+
+                    <h3>Saved Growth Simulation</h3>
+
+                    <div class="timeline-table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Plant</th>
+                                    <th>Days</th>
+                                    <th>Score</th>
+                                    <th>Risk</th>
+                                    <th>Visual</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="growthHistoryTable"></tbody>
+
+                        </table>
+                    </div>
                 </table>
             </div>
         </section>

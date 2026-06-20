@@ -28,6 +28,7 @@ const resetButton = document.getElementById("resetButton");
 const plantTypeSelect = document.getElementById("plantTypeSelect");
 const growthDaysInput = document.getElementById("growthDaysInput");
 const runGrowthButton = document.getElementById("runGrowthButton");
+const loadGrowthSimulationButton = document.getElementById("loadGrowthSimulationButton");
 
 const addRuleButton = document.getElementById("addRuleButton");
 const ruleList = document.getElementById("ruleList");
@@ -60,6 +61,7 @@ const growthVisualValue = document.getElementById("growthVisualValue");
 const growthCurrentDayValue = document.getElementById("growthCurrentDayValue");
 const growthSummaryBox = document.getElementById("growthSummaryBox");
 const growthTimelineTable = document.getElementById("growthTimelineTable");
+const gorwthHistoryTable = document.getElementById("growthHistoryTable");
 
 const playTimelineButton = document.getElementById("playTimelineButton");
 const pauseTimelineButton = document.getElementById("pauseTimelineButton");
@@ -92,6 +94,10 @@ addRuleButton.addEventListener("click", () => {
 
 runGrowthButton.addEventListener("click", () => {
     runGrowthSimulation();
+});
+
+loadGrowthSimulationsButton.addEventListener("click", () => {
+    loadGrowthSimulations();
 });
 
 playTimelineButton.addEventListener("click", () => {
@@ -513,6 +519,77 @@ async function runGrowthSimulation() {
     } catch (error) {
         console.error(error);
         alert("Growth Simulation 실행에 실패했습니다. Spring Boot 서버가 켜져 있는지 확인해 주세요.");
+    }
+}
+
+async function loadGrowthSimulations() {
+    try {
+        const response = await fetch("http://localhost:8080/api/growth/simulations");
+
+        if (!response.ok) {
+            throw new Error("Failed to load growth simulations: " + response.status);
+        }
+
+        const simulations = await response.json();
+
+        renderGrowthSimulationHistory(simulations);
+
+    } catch (error) {
+        console.error(error);
+        alert("Growth Simulation 기록 조회에 실패했습니다. Spring Boot 서버가 켜져 있는지 확인해 주세요.");
+    }
+}
+
+function renderGrowthSimulationHistory(simulations) {
+    growthHistoryTable.innerHTML = "";
+
+    if (!simulations || simulations.length === 0) {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td colspan="6">No saved growth simulations.</td>
+        `;
+
+        growthHistoryTable.appendChild(row);
+        return;
+    }
+
+    simulations.forEach((simulation) => {
+        const row = document.createElement("tr");
+        row.className = "clickable-row";
+
+        row.innerHTML = `
+            <td>${simulation.simulationId}</td>
+            <td>${simulation.plantType}</td>
+            <td>${simulation.days}</td>
+            <td>${Number(simulation.finalGrowthScore || 0).toFixed(1)}</td>
+            <td>${simulation.finalRiskLevel || "LOW"}</td>
+            <td>${simulation.finalVisualState || "stable"}</td>
+        `;
+
+        row.addEventListener("click", () => {
+            loadGrowthSimulationDetail(simulation.simulationId);
+        });
+
+        growthHistoryTable.appendChild(row);
+    });
+}
+
+async function loadGrowthSimulationDetail(simulationId) {
+    try {
+        const response = await fetch(`http://localhost:8080/api/growth/simulations/${simulationId}`);
+
+        if (!response.ok) {
+            throw new Error("Failed to load growth simulation detail: " + response.status);
+        }
+
+        const detail = await response.json();
+
+        renderGrowthResult(detail);
+
+    } catch (error) {
+        console.error(error);
+        alert("Growth Simulation 상세 조회에 실패했습니다.");
     }
 }
 

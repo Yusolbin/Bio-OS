@@ -3,6 +3,7 @@ package com.yusolbin.bio_os.service;
 import com.yusolbin.bio_os.dto.GrowthSimulationRequest;
 import com.yusolbin.bio_os.dto.GrowthSimulationResponse;
 import com.yusolbin.bio_os.dto.GrowthTimelineResponse;
+import com.yusolbin.bio_os.dto.GrowthSimulationSummaryResponse;
 import com.yusolbin.bio_os.model.GrowthSimulation;
 import com.yusolbin.bio_os.model.GrowthTimeline;
 import com.yusolbin.bio_os.model.PlantType;
@@ -150,6 +151,28 @@ public class GrowthSimulationService {
 
         return new GrowthSimulationResponse(savedSimulation, timelineResponses);
     }
+
+    @Transactional(readOnly = true)
+public List<GrowthSimulationSummaryResponse> getGrowthSimulations() {
+    return growthSimulationRepository.findAllByOrderByIdDesc()
+            .stream()
+            .map(GrowthSimulationSummaryResponse::new)
+            .toList();
+}
+
+@Transactional(readOnly = true)
+public GrowthSimulationResponse getGrowthSimulation(Long simulationId) {
+    GrowthSimulation simulation = growthSimulationRepository.findById(simulationId)
+            .orElseThrow(() -> new IllegalArgumentException("GrowthSimulation not found: " + simulationId));
+
+    List<GrowthTimelineResponse> timeline = growthTimelineRepository
+            .findByGrowthSimulationIdOrderByDayAsc(simulationId)
+            .stream()
+            .map(GrowthTimelineResponse::new)
+            .toList();
+
+    return new GrowthSimulationResponse(simulation, timeline);
+}
 
     private int normalizeDays(int days) {
         if (days <= 0) {

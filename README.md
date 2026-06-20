@@ -557,6 +557,270 @@ docs/screenshots/api-response.png
 
 ## 14. Author
 
+---
+
+## BIO-OS v3: Growth Simulation Mode
+
+BIO-OS v3에서는 단일 Tick 시뮬레이션을 넘어, 현재 환경값을 기반으로 식물의 N일 뒤 성장 변화를 예측하는 **Growth Simulation Mode**를 추가했다.
+
+기존 v2의 흐름은 다음과 같았다.
+
+```text
+현재 환경 입력
+→ GeneRule 평가
+→ energyEffect 계산
+→ riskLevel 분석
+→ recommendation 생성
+→ SimulationLog 저장
+```
+
+v3에서는 이 구조를 확장해 다음 흐름을 구현했다.
+
+```text
+PlantType 선택
+→ Water / Light / Temperature / Humidity 입력
+→ N일 Growth Simulation 실행
+→ 날짜별 growthScore / totalEnergy / visualState 계산
+→ GrowthTimeline DB 저장
+→ 저장된 성장 시뮬레이션 목록 조회
+→ 특정 기록 다시 불러오기
+→ Timeline Replay
+→ Plant Pixel View 상태 변화
+```
+
+---
+
+### PlantType System
+
+식물마다 적정 환경 범위가 다르기 때문에 `PlantType` 시스템을 추가했다.
+
+현재 기본 등록된 식물 종류는 다음과 같다.
+
+```text
+Basil
+- Water: 50 ~ 80
+- Light: 60 ~ 90
+- Temperature: 20 ~ 28
+- Humidity: 40 ~ 70
+- Base Growth Rate: 1.2
+
+Succulent
+- Water: 10 ~ 35
+- Light: 70 ~ 100
+- Temperature: 18 ~ 32
+- Humidity: 20 ~ 50
+- Base Growth Rate: 0.8
+
+Monstera
+- Water: 40 ~ 70
+- Light: 40 ~ 75
+- Temperature: 20 ~ 30
+- Humidity: 50 ~ 80
+- Base Growth Rate: 1.0
+```
+
+PlantType은 Spring Boot 서버 시작 시 `DefaultPlantTypeSeeder`를 통해 자동 등록된다.
+
+---
+
+### Growth Simulation API
+
+현재 환경값과 식물 종류, 예측 기간을 입력하면 N일 동안의 성장 타임라인을 생성한다.
+
+```http
+POST /api/growth/simulate
+```
+
+Request:
+
+```json
+{
+  "plantTypeId": 1,
+  "water": 55,
+  "light": 75,
+  "temperature": 25,
+  "humidity": 60,
+  "days": 30
+}
+```
+
+Response:
+
+```json
+{
+  "simulationId": 1,
+  "plantType": "Basil",
+  "days": 30,
+  "initialWater": 55.0,
+  "initialLight": 75.0,
+  "initialTemperature": 25.0,
+  "initialHumidity": 60.0,
+  "finalGrowthScore": 100.0,
+  "finalRiskLevel": "LOW",
+  "finalVisualState": "photosynthesis_boost",
+  "summary": "Basil is expected to grow steadily under the current environment.",
+  "timeline": [
+    {
+      "day": 1,
+      "water": 55.0,
+      "light": 75.0,
+      "temperature": 25.0,
+      "humidity": 60.0,
+      "growthScore": 54.6,
+      "totalEnergy": 153.0,
+      "visualState": "photosynthesis_boost",
+      "riskLevel": "LOW",
+      "activeStates": [
+        "OptimalWater",
+        "PhotosynthesisBoost",
+        "OptimalTemperature",
+        "OptimalHumidity"
+      ],
+      "matchedRules": [
+        "Water 55.0 compared with optimal range 50.0 ~ 80.0 => OptimalWater",
+        "Light 75.0 compared with optimal range 60.0 ~ 90.0 => PhotosynthesisBoost",
+        "Temperature 25.0 compared with optimal range 20.0 ~ 28.0 => OptimalTemperature",
+        "Humidity 60.0 compared with optimal range 40.0 ~ 70.0 => OptimalHumidity"
+      ]
+    }
+  ]
+}
+```
+
+---
+
+### Growth Simulation History API
+
+성장 시뮬레이션 결과는 DB에 저장되며, 저장된 기록을 다시 불러올 수 있다.
+
+```http
+GET /api/growth/simulations
+```
+
+저장된 성장 시뮬레이션 목록을 최신순으로 조회한다.
+
+```http
+GET /api/growth/simulations/{simulationId}
+```
+
+특정 성장 시뮬레이션의 상세 정보와 날짜별 Growth Timeline을 조회한다.
+
+---
+
+### Growth Timeline Replay
+
+Web Dashboard에서는 저장된 Growth Timeline을 다시 불러와 재생할 수 있다.
+
+지원 기능:
+
+```text
+Run Growth Simulation
+Load Growth Simulations
+Saved Growth Simulation 목록 조회
+특정 Growth Simulation 클릭 후 상세 Timeline 로드
+Play Timeline
+Pause
+Reset
+Plant Pixel View 상태 변화
+```
+
+이를 통해 BIO-OS는 단순히 현재 상태를 분석하는 도구에서,
+식물의 미래 성장 변화를 예측하고 시각화하는 시뮬레이션 대시보드로 확장되었다.
+
+---
+
+### v3 Current Progress
+
+```text
+✅ PlantType Entity 추가
+✅ PlantTypeRepository 추가
+✅ PlantTypeService 추가
+✅ PlantTypeController 추가
+✅ DefaultPlantTypeSeeder 추가
+✅ GET /api/plants 구현
+✅ Humidity 입력 추가
+✅ SimulationRequest / SimulationResponse / SimulationLog에 humidity 반영
+✅ Web Dashboard에 Humidity 표시
+✅ GrowthSimulation Entity 추가
+✅ GrowthTimeline Entity 추가
+✅ POST /api/growth/simulate 구현
+✅ 30일 Growth Timeline 생성
+✅ Growth Simulation 결과 DB 저장
+✅ GET /api/growth/simulations 구현
+✅ GET /api/growth/simulations/{id} 구현
+✅ Web Dashboard에 Growth Simulation Mode 추가
+✅ Growth Timeline Table 표시
+✅ Timeline Replay 구현
+✅ 저장된 Growth Simulation 다시 불러오기 구현
+```
+
+---
+
+### Updated Project Structure
+
+```text
+backend/bio-os/src/main/java/com/yusolbin/bio_os/
+├─ controller/
+│  ├─ SimulationController.java
+│  ├─ GeneRuleController.java
+│  ├─ PlantTypeController.java
+│  └─ GrowthSimulationController.java
+│
+├─ service/
+│  ├─ SimulationService.java
+│  ├─ GeneRuleService.java
+│  ├─ PlantTypeService.java
+│  └─ GrowthSimulationService.java
+│
+├─ dto/
+│  ├─ SimulationRequest.java
+│  ├─ SimulationResponse.java
+│  ├─ SimulationLogResponse.java
+│  ├─ GeneRuleRequest.java
+│  ├─ GeneRuleResponse.java
+│  ├─ PlantTypeResponse.java
+│  ├─ GrowthSimulationRequest.java
+│  ├─ GrowthSimulationResponse.java
+│  ├─ GrowthSimulationSummaryResponse.java
+│  └─ GrowthTimelineResponse.java
+│
+├─ model/
+│  ├─ SimulationLog.java
+│  ├─ GeneRule.java
+│  ├─ PlantType.java
+│  ├─ GrowthSimulation.java
+│  └─ GrowthTimeline.java
+│
+├─ repository/
+│  ├─ SimulationLogRepository.java
+│  ├─ GeneRuleRepository.java
+│  ├─ PlantTypeRepository.java
+│  ├─ GrowthSimulationRepository.java
+│  └─ GrowthTimelineRepository.java
+│
+├─ config/
+│  ├─ DefaultGeneRuleSeeder.java
+│  └─ DefaultPlantTypeSeeder.java
+│
+└─ BioOsApplication.java
+```
+
+---
+
+### Future Work
+
+```text
+⬜ Growth Timeline chart visualization
+⬜ Growth Score 변화 그래프 추가
+⬜ 관리자 대시보드 구현
+⬜ Login / Logout 구현
+⬜ User별 SimulationLog / GrowthSimulation 분리
+⬜ AI Growth Predictor 구현
+⬜ C++ Engine과 Spring Boot 직접 연결
+⬜ 배포
+```
+
+
 **Yusolbin**
 
 GitHub: https://github.com/yusolbin

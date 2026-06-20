@@ -1,12 +1,6 @@
-let tick = 0;
-
-const rules = [
-    { field: "Water", operator: "<", threshold: 30, state: "DroughtMode" },
-    { field: "Light", operator: ">", threshold: 70, state: "PhotosynthesisBoost" },
-    { field: "Temperature", operator: ">", threshold: 35, state: "HeatStress" },
-    { field: "Water", operator: "<", threshold: 10, state: "PruningMode" },
-    { field: "Water", operator: ">", threshold: 100, state: "RecoveryMode" },
-];
+let currentGrowthTimeline = [];
+let currentGrowthDayIndex = 0;
+let timelineTimer = null;
 
 const plantImages = {
     stable: "assets/stable.png",
@@ -31,6 +25,10 @@ const randomButton = document.getElementById("randomButton");
 const loadLogsButton = document.getElementById("loadLogsButton");
 const resetButton = document.getElementById("resetButton");
 
+const plantTypeSelect = document.getElementById("plantTypeSelect");
+const growthDaysInput = document.getElementById("growthDaysInput");
+const runGrowthButton = document.getElementById("runGrowthButton");
+
 const addRuleButton = document.getElementById("addRuleButton");
 const ruleList = document.getElementById("ruleList");
 
@@ -53,6 +51,19 @@ const activeStatesBox = document.getElementById("activeStatesBox");
 const matchedRulesBox = document.getElementById("matchedRulesBox");
 const recommendationBox = document.getElementById("recommendationBox");
 const historyTable = document.getElementById("historyTable");
+
+const growthPlantTypeValue = document.getElementById("growthPlantTypeValue");
+const growthDaysValue = document.getElementById("growthDaysValue");
+const growthScoreValue = document.getElementById("growthScoreValue");
+const growthRiskValue = document.getElementById("growthRiskValue");
+const growthVisualValue = document.getElementById("growthVisualValue");
+const growthCurrentDayValue = document.getElementById("growthCurrentDayValue");
+const growthSummaryBox = document.getElementById("growthSummaryBox");
+const growthTimelineTable = document.getElementById("growthTimelineTable");
+
+const playTimelineButton = document.getElementById("playTimelineButton");
+const pauseTimelineButton = document.getElementById("pauseTimelineButton");
+const resetTimelineButton = document.getElementById("resetTimelineButton");
 
 runButton.addEventListener("click", () => {
     runSimulationFromInput();
@@ -77,6 +88,22 @@ loadLogsButton.addEventListener("click", () => {
 
 addRuleButton.addEventListener("click", () => {
     createGeneRule();
+});
+
+runGrowthButton.addEventListener("click", () => {
+    runGrowthSimulation();
+});
+
+playTimelineButton.addEventListener("click", () => {
+    playGrowthTimeline();
+});
+
+pauseTimelineButton.addEventListener("click", () => {
+    pauseGrowthTimeline();
+});
+
+resetTimelineButton.addEventListener("click", () => {
+    resetGrowthTimeline();
 });
 
 async function clearSimulationLogs() {
@@ -315,8 +342,6 @@ async function loadGeneRules() {
 
         const serverRules = await response.json();
 
-        console.log("Loaded gene rules:", serverRules);
-
         ruleList.innerHTML = "";
 
         if (!serverRules || serverRules.length === 0) {
@@ -416,6 +441,224 @@ async function deleteGeneRule(ruleId) {
         console.error(error);
         alert("Gene Rule 삭제에 실패했습니다.");
     }
+}
+
+async function loadPlantTypes() {
+    try {
+        const response = await fetch("http://localhost:8080/api/plants");
+
+        if (!response.ok) {
+            throw new Error("Failed to load plant types: " + response.status);
+        }
+
+        const plantTypes = await response.json();
+
+        plantTypeSelect.innerHTML = "";
+
+        if (!plantTypes || plantTypes.length === 0) {
+            const option = document.createElement("option");
+            option.value = "";
+            option.textContent = "No plant types registered";
+            plantTypeSelect.appendChild(option);
+            return;
+        }
+
+        plantTypes.forEach((plantType) => {
+            const option = document.createElement("option");
+            option.value = plantType.id;
+            option.textContent = `${plantType.name} / Water ${plantType.optimalWaterMin}-${plantType.optimalWaterMax}`;
+            plantTypeSelect.appendChild(option);
+        });
+
+    } catch (error) {
+        console.error(error);
+        alert("Plant Type 조회에 실패했습니다. Spring Boot 서버가 실행 중인지 확인해 주세요.");
+    }
+}
+
+async function runGrowthSimulation() {
+    const plantTypeId = Number(plantTypeSelect.value);
+
+    if (!plantTypeId) {
+        alert("Plant Type을 선택해 주세요.");
+        return;
+    }
+
+    const days = Number(growthDaysInput.value || 30);
+
+    try {
+        const response = await fetch("http://localhost:8080/api/growth/simulate", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                plantTypeId: plantTypeId,
+                water: Number(waterInput.value),
+                light: Number(lightInput.value),
+                temperature: Number(temperatureInput.value),
+                humidity: Number(humidityInput.value),
+                days: days,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error("Growth simulation request failed: " + response.status);
+        }
+
+        const result = await response.json();
+
+        renderGrowthResult(result);
+
+    } catch (error) {
+        console.error(error);
+        alert("Growth Simulation 실행에 실패했습니다. Spring Boot 서버가 켜져 있는지 확인해 주세요.");
+    }
+}
+
+function renderGrowthResult(result) {
+    pauseGrowthTimeline();
+
+    currentGrowthTimeline = result.timeline || [];
+    currentGrowthDayIndex = 0;
+
+    growthPlantTypeValue.textContent = result.plantType || "-";
+    growthDaysValue.textContent = result.days ?? currentGrowthTimeline.length;
+    growthScoreValue.textContent = Number(result.finalGrowthScore || 0).toFixed(1);
+
+    const finalRiskLevel = result.finalRiskLevel || "LOW";
+    growthRiskValue.textContent = finalRiskLevel;
+    growthRiskValue.className = `risk-badge ${getRiskClass(finalRiskLevel)}`;
+
+    growthVisualValue.textContent = result.finalVisualState || "stable";
+    growthSummaryBox.textContent = result.summary || "No summary.";
+
+    renderGrowthTimelineTable(currentGrowthTimeline);
+
+    if (currentGrowthTimeline.length > 0) {
+        renderGrowthDay(0);
+    }
+}
+
+function renderGrowthTimelineTable(timeline) {
+    growthTimelineTable.innerHTML = "";
+
+    if (!timeline || timeline.length === 0) {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td colspan="5">No growth timeline.</td>
+        `;
+        growthTimelineTable.appendChild(row);
+        return;
+    }
+
+    timeline.forEach((dayData, index) => {
+        const row = document.createElement("tr");
+        row.dataset.index = String(index);
+
+        row.innerHTML = `
+            <td>${dayData.day}</td>
+            <td>${Number(dayData.growthScore || 0).toFixed(1)}</td>
+            <td>${Number(dayData.totalEnergy || 0).toFixed(1)}</td>
+            <td>${dayData.riskLevel || "LOW"}</td>
+            <td>${dayData.visualState || "stable"}</td>
+        `;
+
+        row.addEventListener("click", () => {
+            pauseGrowthTimeline();
+            renderGrowthDay(index);
+        });
+
+        growthTimelineTable.appendChild(row);
+    });
+}
+
+function renderGrowthDay(index) {
+    if (!currentGrowthTimeline || currentGrowthTimeline.length === 0) {
+        return;
+    }
+
+    if (index < 0) {
+        index = 0;
+    }
+
+    if (index >= currentGrowthTimeline.length) {
+        index = currentGrowthTimeline.length - 1;
+    }
+
+    currentGrowthDayIndex = index;
+
+    const dayData = currentGrowthTimeline[index];
+    const visualKey = dayData.visualState || "stable";
+    const imagePath = plantImages[visualKey] || plantImages.stable;
+
+    plantImage.src = imagePath;
+    visualState.textContent = `Growth Timeline Day ${dayData.day}: ${visualKey}`;
+
+    growthCurrentDayValue.textContent = `Day ${dayData.day}`;
+    growthScoreValue.textContent = Number(dayData.growthScore || 0).toFixed(1);
+
+    const riskLevel = dayData.riskLevel || "LOW";
+    growthRiskValue.textContent = riskLevel;
+    growthRiskValue.className = `risk-badge ${getRiskClass(riskLevel)}`;
+
+    growthVisualValue.textContent = visualKey;
+
+    highlightGrowthTimelineRow(index);
+}
+
+function highlightGrowthTimelineRow(index) {
+    const rows = growthTimelineTable.querySelectorAll("tr");
+
+    rows.forEach((row) => {
+        row.classList.remove("active-timeline-row");
+    });
+
+    const activeRow = growthTimelineTable.querySelector(`tr[data-index="${index}"]`);
+
+    if (activeRow) {
+        activeRow.classList.add("active-timeline-row");
+        activeRow.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+        });
+    }
+}
+
+function playGrowthTimeline() {
+    if (!currentGrowthTimeline || currentGrowthTimeline.length === 0) {
+        alert("먼저 Growth Simulation을 실행해 주세요.");
+        return;
+    }
+
+    pauseGrowthTimeline();
+
+    timelineTimer = setInterval(() => {
+        renderGrowthDay(currentGrowthDayIndex);
+
+        currentGrowthDayIndex += 1;
+
+        if (currentGrowthDayIndex >= currentGrowthTimeline.length) {
+            pauseGrowthTimeline();
+        }
+    }, 700);
+}
+
+function pauseGrowthTimeline() {
+    if (timelineTimer) {
+        clearInterval(timelineTimer);
+        timelineTimer = null;
+    }
+}
+
+function resetGrowthTimeline() {
+    pauseGrowthTimeline();
+
+    if (!currentGrowthTimeline || currentGrowthTimeline.length === 0) {
+        return;
+    }
+
+    renderGrowthDay(0);
 }
 
 function makeRecommendation(result) {
@@ -518,6 +761,7 @@ function getRiskClass(riskLevel) {
     }
 }
 
+loadPlantTypes();
 loadGeneRules();
 
 renderResult({

@@ -516,3 +516,62 @@ tbody tr:hover {
     overflow-y: auto;
 }
 }
+.growth-control-card label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+    color: #334155;
+    font-weight: 800;
+}
+
+.growth-control-card select,
+.growth-control-card input {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    font-size: 15px;
+    background: #ffffff;
+}
+
+.section-desc {
+    margin-top: -4px;
+    margin-bottom: 18px;
+    color: #64748b;
+    line-height: 1.55;
+    font-size: 14px;
+}
+
+.timeline-controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 14px 0 18px;
+}
+
+.timeline-table-wrap {
+    max-height: 260px;
+    overflow-y: auto;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+}
+
+#growthTimelineTable tr {
+    cursor: pointer;
+}
+
+#growthTimelineTable tr:hover {
+    background: #f8fafc;
+}
+
+.active-timeline-row {
+    background: #eff6ff !important;
+    outline: 2px solid #bfdbfe;
+    font-weight: 800;
+}
+
+#growthSummaryBox {
+    min-height: 58px;
+    white-space: pre-wrap;
+}

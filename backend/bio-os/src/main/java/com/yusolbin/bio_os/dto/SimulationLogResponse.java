@@ -14,6 +14,7 @@ public class SimulationLogResponse {
     private double water;
     private double light;
     private double temperature;
+    private double humidity;
 
     private double totalEnergy;
     private double energyDelta;
@@ -34,6 +35,7 @@ public class SimulationLogResponse {
         this.water = log.getWater();
         this.light = log.getLight();
         this.temperature = log.getTemperature();
+        this.humidity = log.getHumidity();
         this.totalEnergy = log.getTotalEnergy();
         this.lastAction = log.getLastAction();
         this.visualState = log.getVisualState();
@@ -85,6 +87,10 @@ public class SimulationLogResponse {
 
     public double getTemperature() {
         return temperature;
+    }
+
+    public double getHumidity() {
+        return humidity;
     }
 
     public double getTotalEnergy() {

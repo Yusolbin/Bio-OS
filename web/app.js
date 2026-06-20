@@ -24,6 +24,7 @@ const plantImages = {
 const waterInput = document.getElementById("waterInput");
 const lightInput = document.getElementById("lightInput");
 const temperatureInput = document.getElementById("temperatureInput");
+const humidityInput = document.getElementById("humidityInput");
 
 const runButton = document.getElementById("runButton");
 const randomButton = document.getElementById("randomButton");
@@ -37,17 +38,21 @@ const plantImage = document.getElementById("plantImage");
 const visualState = document.getElementById("visualState");
 
 const tickValue = document.getElementById("tickValue");
+const waterValue = document.getElementById("waterValue");
+const lightValue = document.getElementById("lightValue");
+const temperatureValue = document.getElementById("temperatureValue");
+const humidityValue = document.getElementById("humidityValue");
+
 const lastActionValue = document.getElementById("lastActionValue");
 const energyValue = document.getElementById("energyValue");
+const energyDeltaValue = document.getElementById("energyDeltaValue");
+const riskLevelValue = document.getElementById("riskLevelValue");
 const visualStateValue = document.getElementById("visualStateValue");
 
 const activeStatesBox = document.getElementById("activeStatesBox");
+const matchedRulesBox = document.getElementById("matchedRulesBox");
 const recommendationBox = document.getElementById("recommendationBox");
 const historyTable = document.getElementById("historyTable");
-
-const energyDeltaValue = document.getElementById("energyDeltaValue");
-const riskLevelValue = document.getElementById("riskLevelValue");
-const matchedRulesBox = document.getElementById("matchedRulesBox");
 
 runButton.addEventListener("click", () => {
     runSimulationFromInput();
@@ -57,6 +62,7 @@ randomButton.addEventListener("click", () => {
     waterInput.value = randomRange(0, 160).toFixed(1);
     lightInput.value = randomRange(0, 100).toFixed(1);
     temperatureInput.value = randomRange(5, 45).toFixed(1);
+    humidityInput.value = randomRange(20, 90).toFixed(1);
 
     runSimulationFromInput();
 });
@@ -96,10 +102,15 @@ async function clearSimulationLogs() {
             water: 0,
             light: 0,
             temperature: 0,
+            humidity: 60,
             totalEnergy: 100,
             lastAction: "None",
             activeStates: [],
             visualState: "stable",
+            energyDelta: 0,
+            matchedRules: [],
+            riskLevel: "LOW",
+            recommendation: "Press Run Simulation to start BIO-OS analysis.",
         });
 
         alert("Simulation Log가 삭제되었습니다.");
@@ -114,6 +125,7 @@ async function runSimulationFromInput() {
     const water = Number(waterInput.value);
     const light = Number(lightInput.value);
     const temperature = Number(temperatureInput.value);
+    const humidity = Number(humidityInput.value);
 
     try {
         const response = await fetch("http://localhost:8080/api/simulations/run", {
@@ -125,6 +137,7 @@ async function runSimulationFromInput() {
                 water: water,
                 light: light,
                 temperature: temperature,
+                humidity: humidity,
             }),
         });
 
@@ -143,159 +156,44 @@ async function runSimulationFromInput() {
     }
 }
 
-function simulateTick(water, light, temperature) {
-    tick += 1;
-
-    const env = {
-        Water: water,
-        Light: light,
-        Temperature: temperature,
-    };
-
-    const activeStates = evaluateRules(env);
-
-    let totalEnergy = 100;
-
-    totalEnergy += light * 0.35;
-    totalEnergy -= Math.max(0, 30 - water) * 1.4;
-    totalEnergy -= Math.max(0, temperature - 32) * 2.2;
-
-    if (activeStates.includes("RecoveryMode")) {
-        totalEnergy += 25;
-    }
-
-    if (activeStates.includes("HeatStress")) {
-        totalEnergy -= 20;
-    }
-
-    if (activeStates.includes("DroughtMode")) {
-        totalEnergy -= 30;
-    }
-
-    totalEnergy = Math.max(0, Math.min(160, totalEnergy));
-
-    let lastAction = "Stable";
-
-    if (activeStates.includes("PruningMode")) {
-        lastAction = tick % 2 === 0 ? "PruningAlreadyExecuted" : "Pruning";
-    } else if (totalEnergy < 25) {
-        lastAction = "Pruning";
-    } else {
-        lastAction = "Stable";
-    }
-
-    const visual = chooseVisualState(activeStates, lastAction, totalEnergy);
-
-    return {
-        tick,
-        water,
-        light,
-        temperature,
-        totalEnergy,
-        lastAction,
-        activeStates,
-        visual,
-    };
-}
-
-function evaluateRules(env) {
-    const activeStates = [];
-
-    for (const rule of rules) {
-        const value = env[rule.field];
-
-        if (evaluateCondition(value, rule.operator, rule.threshold)) {
-            activeStates.push(rule.state);
-        }
-    }
-
-    return [...new Set(activeStates)];
-}
-
-function evaluateCondition(value, operator, threshold) {
-    switch (operator) {
-        case "<":
-            return value < threshold;
-        case ">":
-            return value > threshold;
-        case "<=":
-            return value <= threshold;
-        case ">=":
-            return value >= threshold;
-        default:
-            return false;
-    }
-}
-
-function chooseVisualState(activeStates, lastAction, totalEnergy) {
-    if (totalEnergy <= 5) {
-        return "dead_critical";
-    }
-
-    if (activeStates.includes("RecoveryMode")) {
-        return "recovery_mode";
-    }
-
-    if (activeStates.includes("HeatStress")) {
-        return "heat_stress";
-    }
-
-    if (activeStates.includes("DroughtMode")) {
-        return "drought_mode";
-    }
-
-    if (lastAction === "PruningAlreadyExecuted") {
-        return "pruning_already_executed";
-    }
-
-    if (lastAction === "Pruning" || lastAction === "PruningFailed") {
-        return "pruned";
-    }
-
-    if (activeStates.includes("PhotosynthesisBoost")) {
-        return "photosynthesis_boost";
-    }
-
-    if (activeStates.includes("ColdStress")) {
-        return "cold_stress";
-    }
-
-    if (totalEnergy < 40) {
-        return "low_energy";
-    }
-
-    return "stable";
-}
-
 function renderResult(result) {
     const visualKey = result.visualState || result.visual || "stable";
     const imagePath = plantImages[visualKey] || plantImages.stable;
 
+    const activeStates = result.activeStates || [];
+    const matchedRules = result.matchedRules || [];
+
     plantImage.src = imagePath;
-    visualState.textContent = `visual: ${visualKey}`;
+    visualState.textContent = `Current Visual State: ${visualKey}`;
 
-    tickValue.textContent = result.tick;
-lastActionValue.textContent = result.lastAction;
-energyValue.textContent = Number(result.totalEnergy).toFixed(1);
-energyDeltaValue.textContent = formatSignedNumber(result.energyDelta || 0);
-visualStateValue.textContent = visualKey;
+    tickValue.textContent = result.tick ?? 0;
 
-const riskLevel = result.riskLevel || "LOW";
-riskLevelValue.textContent = riskLevel;
-riskLevelValue.className = `risk-badge ${getRiskClass(riskLevel)}`;
+    waterValue.textContent = Number(result.water || 0).toFixed(1);
+    lightValue.textContent = Number(result.light || 0).toFixed(1);
+    temperatureValue.textContent = Number(result.temperature || 0).toFixed(1);
+    humidityValue.textContent = Number(result.humidity || 0).toFixed(1);
 
-    if (result.activeStates.length === 0) {
+    lastActionValue.textContent = result.lastAction || "None";
+    energyValue.textContent = Number(result.totalEnergy || 0).toFixed(1);
+    energyDeltaValue.textContent = formatSignedNumber(result.energyDelta || 0);
+    visualStateValue.textContent = visualKey;
+
+    const riskLevel = result.riskLevel || "LOW";
+    riskLevelValue.textContent = riskLevel;
+    riskLevelValue.className = `risk-badge ${getRiskClass(riskLevel)}`;
+
+    if (activeStates.length === 0) {
         activeStatesBox.textContent = "No active states.";
     } else {
-        activeStatesBox.textContent = result.activeStates
+        activeStatesBox.textContent = activeStates
             .map((state) => `- ${state}: ON`)
             .join("\n");
     }
 
-    if (!result.matchedRules || result.matchedRules.length === 0){
+    if (matchedRules.length === 0) {
         matchedRulesBox.textContent = "No matched rules.";
-    }else{
-        matchedRulesBox.textContent = result.matchedRules
+    } else {
+        matchedRulesBox.textContent = matchedRules
             .map((rule) => `• ${rule}`)
             .join("\n");
     }
@@ -307,13 +205,17 @@ riskLevelValue.className = `risk-badge ${getRiskClass(riskLevel)}`;
 function appendHistory(result) {
     const row = document.createElement("tr");
 
+    const visualKey = result.visualState || result.visual || "stable";
+
     row.innerHTML = `
-        <td>${result.tick}</td>
-        <td>${result.water.toFixed(1)}</td>
-        <td>${result.light.toFixed(1)}</td>
-        <td>${result.temperature.toFixed(1)}</td>
-        <td>${result.lastAction}</td>
-        <td>${result.visualState || result.visual || "stable"}</td>
+        <td>${result.tick ?? 0}</td>
+        <td>${Number(result.water || 0).toFixed(1)}</td>
+        <td>${Number(result.light || 0).toFixed(1)}</td>
+        <td>${Number(result.temperature || 0).toFixed(1)}</td>
+        <td>${Number(result.humidity || 0).toFixed(1)}</td>
+        <td>${Number(result.totalEnergy || 0).toFixed(1)}</td>
+        <td>${result.lastAction || "None"}</td>
+        <td>${visualKey}</td>
     `;
 
     historyTable.prepend(row);
@@ -343,6 +245,25 @@ async function loadSimulationLogs() {
         console.error(error);
         alert("DB 로그 조회에 실패했습니다. Spring Boot 서버가 켜져 있는지 확인해 주세요.");
     }
+}
+
+function appendHistoryFromLog(log) {
+    const row = document.createElement("tr");
+
+    const visualKey = log.visualState || log.visual || "stable";
+
+    row.innerHTML = `
+        <td>${log.tick ?? 0}</td>
+        <td>${Number(log.water || 0).toFixed(1)}</td>
+        <td>${Number(log.light || 0).toFixed(1)}</td>
+        <td>${Number(log.temperature || 0).toFixed(1)}</td>
+        <td>${Number(log.humidity || 0).toFixed(1)}</td>
+        <td>${Number(log.totalEnergy || 0).toFixed(1)}</td>
+        <td>${log.lastAction || "None"}</td>
+        <td>${visualKey}</td>
+    `;
+
+    historyTable.appendChild(row);
 }
 
 async function createGeneRule() {
@@ -497,29 +418,15 @@ async function deleteGeneRule(ruleId) {
     }
 }
 
-function appendHistoryFromLog(log) {
-    const row = document.createElement("tr");
-
-    const visualKey = log.visualState || log.visual || "stable";
-
-    row.innerHTML = `
-        <td>${log.tick}</td>
-        <td>${Number(log.water).toFixed(1)}</td>
-        <td>${Number(log.light).toFixed(1)}</td>
-        <td>${Number(log.temperature).toFixed(1)}</td>
-        <td>${log.lastAction}</td>
-        <td>${visualKey}</td>
-    `;
-
-    historyTable.appendChild(row);
-}
-
 function makeRecommendation(result) {
+    const activeStates = result.activeStates || [];
+    const visualKey = result.visualState || result.visual || "stable";
+
     if (result.tick === 0) {
         return "Press Run Simulation to start BIO-OS analysis.";
     }
 
-    if (result.visual === "dead_critical") {
+    if (visualKey === "dead_critical") {
         return [
             "Predicted Risk: Critical Survival Failure",
             "Reason: Energy level is extremely low.",
@@ -527,7 +434,7 @@ function makeRecommendation(result) {
         ].join("\n");
     }
 
-    if (result.activeStates.includes("RecoveryMode")) {
+    if (activeStates.includes("RecoveryMode")) {
         return [
             "Predicted Risk: Recovery Mode",
             "Reason: Water input is high enough to trigger recovery.",
@@ -535,7 +442,7 @@ function makeRecommendation(result) {
         ].join("\n");
     }
 
-    if (result.activeStates.includes("HeatStress")) {
+    if (activeStates.includes("HeatStress")) {
         return [
             "Predicted Risk: Heat Stress",
             "Reason: Temperature is above the configured threshold.",
@@ -543,7 +450,7 @@ function makeRecommendation(result) {
         ].join("\n");
     }
 
-    if (result.activeStates.includes("DroughtMode")) {
+    if (activeStates.includes("DroughtMode")) {
         return [
             "Predicted Risk: Drought Stress",
             "Reason: Water input is below the configured threshold.",
@@ -551,7 +458,7 @@ function makeRecommendation(result) {
         ].join("\n");
     }
 
-    if (result.lastAction.includes("Pruning")) {
+    if ((result.lastAction || "").includes("Pruning")) {
         return [
             "Predicted Risk: Pruning Risk",
             "Reason: The plant system selected pruning as a survival action.",
@@ -564,16 +471,6 @@ function makeRecommendation(result) {
         "Reason: Current environment is within a stable range.",
         "Suggestion: Maintain current environment.",
     ].join("\n");
-}
-
-function renderRules() {
-    ruleList.innerHTML = "";
-
-    for (const rule of rules) {
-        const item = document.createElement("li");
-        item.textContent = `IF ${rule.field} ${rule.operator} ${rule.threshold} THEN ${rule.state} = ON`;
-        ruleList.appendChild(item);
-    }
 }
 
 function randomRange(min, max) {
@@ -628,13 +525,13 @@ renderResult({
     water: 0,
     light: 0,
     temperature: 0,
+    humidity: 60,
     totalEnergy: 100,
     lastAction: "None",
     activeStates: [],
-    visual: "stable",
+    visualState: "stable",
     energyDelta: 0,
     matchedRules: [],
     riskLevel: "LOW",
     recommendation: "Press Run Simulation to start BIO-OS analysis.",
 });
-

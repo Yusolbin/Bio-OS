@@ -50,6 +50,7 @@ public class SimulationService {
         double water = request.getWater();
         double light = request.getLight();
         double temperature = request.getTemperature();
+        double humidity = request.getHumidity();
 
         RuleEvaluationResult ruleResult = evaluateRules(water, light, temperature);
 
@@ -74,6 +75,7 @@ public class SimulationService {
                 water,
                 light,
                 temperature,
+                humidity,
                 totalEnergy,
                 lastAction,
                 visualState,
@@ -92,6 +94,7 @@ public class SimulationService {
                 water,
                 light,
                 temperature,
+                humidity,
                 totalEnergy,
                 lastAction,
                 visualState,

@@ -3,28 +3,22 @@ package com.yusolbin.bio_os.dto;
 import java.util.List;
 
 public class SimulationResponse {
-
     private Long logId;
     private int tick;
-
     private double water;
     private double light;
     private double temperature;
-
+    private double humidity;
     private double totalEnergy;
-
     private String lastAction;
     private String visualState;
-
     private List<String> activeStates;
-
     private double energyDelta;
     private List<String> matchedRules;
     private String riskLevel;
     private String recommendation;
 
-    public SimulationResponse() {
-    }
+    public SimulationResponse() {}
 
     public SimulationResponse(
             Long logId,
@@ -32,6 +26,7 @@ public class SimulationResponse {
             double water,
             double light,
             double temperature,
+            double humidity,
             double totalEnergy,
             String lastAction,
             String visualState,
@@ -46,6 +41,7 @@ public class SimulationResponse {
         this.water = water;
         this.light = light;
         this.temperature = temperature;
+        this.humidity = humidity;
         this.totalEnergy = totalEnergy;
         this.lastAction = lastAction;
         this.visualState = visualState;
@@ -74,6 +70,10 @@ public class SimulationResponse {
 
     public double getTemperature() {
         return temperature;
+    }
+
+    public double getHumidity() {
+        return humidity;
     }
 
     public double getTotalEnergy() {

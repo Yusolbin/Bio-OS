@@ -19,6 +19,7 @@ public class SimulationLog {
     private double water;
     private double light;
     private double temperature;
+    private double humidity;
 
     private double totalEnergy;
 
@@ -47,6 +48,7 @@ private String riskLevel;
         double water,
         double light,
         double temperature,
+        double humidity,
         double totalEnergy,
         String lastAction,
         String visualState,
@@ -60,6 +62,7 @@ private String riskLevel;
         this.water = water;
         this.light = light;
         this.temperature = temperature;
+        this.humidity = humidity;
         this.totalEnergy = totalEnergy;
         this.lastAction = lastAction;
         this.visualState = visualState;
@@ -89,6 +92,10 @@ private String riskLevel;
 
     public double getTemperature() {
         return temperature;
+    }
+
+    public double getHumidity() {
+        return humidity;
     }
 
     public double getTotalEnergy() {

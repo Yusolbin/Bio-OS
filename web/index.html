@@ -10,7 +10,7 @@
 <div class="app">
     <header class="hero">
         <div>
-            <p class="eyebrow">BIO-OS v0.2 Prototype</p>
+            <p class="eyebrow">BIO-OS v0.3 Prototype</p>
             <h1>Algorithmic Bio-System Simulator</h1>
             <p class="subtitle">
                 C++ 엔진의 생체 상태 데이터를 Spring Boot API, MySQL, Web Dashboard와 연결하여
@@ -38,6 +38,11 @@
                 <input id="temperatureInput" type="number" value="32" min="-10" max="60" />
             </label>
 
+            <label>
+                Humidity
+                <input id="humidityInput" type="number" value="60" min="0" max="100" />
+            </label>
+
             <button id="runButton">Run Simulation</button>
             <button id="randomButton" class="secondary">Random Sample</button>
             <button id="loadLogsButton" class="secondary">Load DB Logs</button>
@@ -45,51 +50,51 @@
         </section>
 
         <section class="card rule-panel">
-    <h2>Gene Rule Input</h2>
+            <h2>Gene Rule Input</h2>
 
-    <div class="rule-row">
-        <span>IF</span>
+            <div class="rule-row">
+                <span>IF</span>
 
-        <select id="ruleField">
-            <option value="Water">Water</option>
-            <option value="Light">Light</option>
-            <option value="Temperature">Temperature</option>
-        </select>
+                <select id="ruleField">
+                    <option value="Water">Water</option>
+                    <option value="Light">Light</option>
+                    <option value="Temperature">Temperature</option>
+                </select>
 
-        <select id="ruleOperator">
-            <option value="LT">&lt;</option>
-            <option value="GT">&gt;</option>
-            <option value="LTE">&lt;=</option>
-            <option value="GTE">&gt;=</option>
-        </select>
+                <select id="ruleOperator">
+                    <option value="LT">&lt;</option>
+                    <option value="GT">&gt;</option>
+                    <option value="LTE">&lt;=</option>
+                    <option value="GTE">&gt;=</option>
+                </select>
 
-        <input id="ruleThreshold" type="number" value="30" />
+                <input id="ruleThreshold" type="number" value="30" />
 
-        <span>THEN</span>
+                <span>THEN</span>
 
-        <input id="ruleState" type="text" value="DroughtMode" />
+                <input id="ruleState" type="text" value="DroughtMode" />
 
-        <span>= ON</span>
-    </div>
-
-    <div class="effect-row">
-        <label for="ruleEnergyEffect">Energy Effect</label>
-        <input id="ruleEnergyEffect" type="number" value="-30" />
-    </div>
-
-    <button id="addRuleButton" class="secondary">Save Rule</button>
-
-    <div class="rule-list">
-        <div class="section-header">
-            <div>
-                <h3>Gene Rule Registry</h3>
-                <p>Rules are stored in MySQL and applied during simulation.</p>
+                <span>= ON</span>
             </div>
-        </div>
 
-        <ul id="ruleList"></ul>
-    </div>
-</section>
+            <div class="effect-row">
+                <label for="ruleEnergyEffect">Energy Effect</label>
+                <input id="ruleEnergyEffect" type="number" value="-30" />
+            </div>
+
+            <button id="addRuleButton" class="secondary">Save Rule</button>
+
+            <div class="rule-list">
+                <div class="section-header">
+                    <div>
+                        <h3>Gene Rule Registry</h3>
+                        <p>Rules are stored in MySQL and applied during simulation.</p>
+                    </div>
+                </div>
+
+                <ul id="ruleList"></ul>
+            </div>
+        </section>
 
         <section class="card plant-card">
             <h2>Plant Pixel View</h2>
@@ -105,42 +110,62 @@
             <h2>Simulation Result</h2>
 
             <div class="result-grid">
-    <div>
-        <span>Tick</span>
-        <strong id="tickValue">0</strong>
-    </div>
+                <div>
+                    <span>Tick</span>
+                    <strong id="tickValue">0</strong>
+                </div>
 
-    <div>
-        <span>Last Action</span>
-        <strong id="lastActionValue">None</strong>
-    </div>
+                <div>
+                    <span>Water</span>
+                    <strong id="waterValue">0.0</strong>
+                </div>
 
-    <div>
-        <span>Total Energy</span>
-        <strong id="energyValue">100.0</strong>
-    </div>
+                <div>
+                    <span>Light</span>
+                    <strong id="lightValue">0.0</strong>
+                </div>
 
-    <div>
-        <span>Energy Delta</span>
-        <strong id="energyDeltaValue">0.0</strong>
-    </div>
+                <div>
+                    <span>Temperature</span>
+                    <strong id="temperatureValue">0.0</strong>
+                </div>
 
-    <div>
-        <span>Risk Level</span>
-        <strong id="riskLevelValue" class="risk-badge risk-low">LOW</strong>
-    </div>
+                <div>
+                    <span>Humidity</span>
+                    <strong id="humidityValue">60.0</strong>
+                </div>
 
-    <div>
-        <span>Visual State</span>
-        <strong id="visualStateValue">stable</strong>
-    </div>
-</div>
+                <div>
+                    <span>Total Energy</span>
+                    <strong id="energyValue">100.0</strong>
+                </div>
+
+                <div>
+                    <span>Energy Delta</span>
+                    <strong id="energyDeltaValue">0.0</strong>
+                </div>
+
+                <div>
+                    <span>Risk Level</span>
+                    <strong id="riskLevelValue" class="risk-badge risk-low">LOW</strong>
+                </div>
+
+                <div>
+                    <span>Last Action</span>
+                    <strong id="lastActionValue">None</strong>
+                </div>
+
+                <div>
+                    <span>Visual State</span>
+                    <strong id="visualStateValue">stable</strong>
+                </div>
+            </div>
 
             <h3>Active States</h3>
             <pre id="activeStatesBox">No active states.</pre>
 
             <h3>Matched Rules</h3>
-            <pre id="matchedRulesBox">No matched ruls.</pre>
+            <pre id="matchedRulesBox">No matched rules.</pre>
 
             <h3>Recommendation</h3>
             <pre id="recommendationBox">Press Run Simulation to start BIO-OS analysis.</pre>
@@ -156,6 +181,8 @@
                     <th>Water</th>
                     <th>Light</th>
                     <th>Temp</th>
+                    <th>Humidity</th>
+                    <th>Energy</th>
                     <th>Action</th>
                     <th>Visual</th>
                 </tr>

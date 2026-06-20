@@ -5,6 +5,7 @@ public class SimulationRequest {
     private double water;
     private double light;
     private double temperature;
+    private double humidity;
 
     public SimulationRequest() {
     }
@@ -31,5 +32,13 @@ public class SimulationRequest {
 
     public void setTemperature(double temperature) {
         this.temperature = temperature;
+    }
+
+    public double getHumidity() {
+        return humidity;
+    }
+
+    public void setHumidity(double humidity) {
+        this.humidity = humidity;
     }
 }

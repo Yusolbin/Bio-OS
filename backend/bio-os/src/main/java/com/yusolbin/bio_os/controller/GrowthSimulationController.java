@@ -27,8 +27,10 @@ public class GrowthSimulationController {
     }
 
     @GetMapping("/simulations")
-    public List<GrowthSimulationSummaryResponse> getGrowthSimulations() {
-        return growthSimulationService.getGrowthSimulations();
+    public List<GrowthSimulationSummaryResponse> getGrowthSimulations(
+            @RequestParam(required = false) Long userId
+    ) {
+        return growthSimulationService.getGrowthSimulations(userId);
     }
 
     @GetMapping("/simulations/{simulationId}")

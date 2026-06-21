@@ -539,6 +539,12 @@ async function loadPlantTypes() {
 }
 
 async function runGrowthSimulation() {
+    if(!currentUser){
+        alert("Growth Simulation은 로그인 후 실행할 수 있습니다.");
+        authMessageBox.textContent = "Login required for Growth Simulation.";
+        return;
+    }
+
     const plantTypeId = Number(plantTypeSelect.value);
 
     if (!plantTypeId) {
@@ -555,6 +561,7 @@ async function runGrowthSimulation() {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
+                userId: currentUser.userId,
                 plantTypeId: plantTypeId,
                 water: Number(waterInput.value),
                 light: Number(lightInput.value),
@@ -579,8 +586,16 @@ async function runGrowthSimulation() {
 }
 
 async function loadGrowthSimulations() {
+    if (!currentUser){
+        alert("Saved Growth Simulations는 로그인 후 확인할 수 있습니다.");
+        authMessageBox.textContent = "Login required to load saved growth simulations.";
+        return;
+    }
+
     try {
-        const response = await fetch("http://localhost:8080/api/growth/simulations");
+        const response = await fetch(
+            `http://localhost:8080/api/growth/simulations?userId=${currentUser.userId}`
+        );
 
         if (!response.ok) {
             throw new Error("Failed to load growth simulations: " + response.status);

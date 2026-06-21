@@ -8,4 +8,6 @@ import java.util.List;
 public interface GrowthSimulationRepository extends JpaRepository<GrowthSimulation, Long> {
 
     List<GrowthSimulation> findAllByOrderByIdDesc();
+    
+    List<GrowthSimulation> findAllByUserAccount_IdOrderByIdDesc(Long userId);
 }

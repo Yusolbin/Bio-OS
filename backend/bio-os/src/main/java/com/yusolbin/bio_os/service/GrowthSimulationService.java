@@ -10,6 +10,7 @@ import com.yusolbin.bio_os.model.PlantType;
 import com.yusolbin.bio_os.repository.GrowthSimulationRepository;
 import com.yusolbin.bio_os.repository.GrowthTimelineRepository;
 import com.yusolbin.bio_os.repository.PlantTypeRepository;
+import com.yusolbin.bio_os.repository.UserAccountRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,15 +24,18 @@ public class GrowthSimulationService {
     private final PlantTypeRepository plantTypeRepository;
     private final GrowthSimulationRepository growthSimulationRepository;
     private final GrowthTimelineRepository growthTimelineRepository;
+    private final UserAccountRepository userAccountRepository;
 
     public GrowthSimulationService(
             PlantTypeRepository plantTypeRepository,
             GrowthSimulationRepository growthSimulationRepository,
-            GrowthTimelineRepository growthTimelineRepository
+            GrowthTimelineRepository growthTimelineRepository,
+            UserAccountRepository userAccountRepository
     ) {
         this.plantTypeRepository = plantTypeRepository;
         this.growthSimulationRepository = growthSimulationRepository;
         this.growthTimelineRepository = growthTimelineRepository;
+        this.userAccountRepository = userAccountRepository;
     }
 
     @Transactional
@@ -128,6 +132,11 @@ public class GrowthSimulationService {
                 summary
         );
 
+        if (request.getUserId() != null) {
+            userAccountRepository.findById(request.getUserId())
+                    .ifPresent(simulation::setUserAccount);
+        }
+
         GrowthSimulation savedSimulation = growthSimulationRepository.save(simulation);
 
         List<GrowthTimeline> timelineEntities = timelineResponses.stream()
@@ -153,26 +162,33 @@ public class GrowthSimulationService {
     }
 
     @Transactional(readOnly = true)
-public List<GrowthSimulationSummaryResponse> getGrowthSimulations() {
-    return growthSimulationRepository.findAllByOrderByIdDesc()
-            .stream()
-            .map(GrowthSimulationSummaryResponse::new)
-            .toList();
-}
+    public List<GrowthSimulationSummaryResponse> getGrowthSimulations(Long userId) {
+        List<GrowthSimulation> simulations;
 
-@Transactional(readOnly = true)
-public GrowthSimulationResponse getGrowthSimulation(Long simulationId) {
-    GrowthSimulation simulation = growthSimulationRepository.findById(simulationId)
-            .orElseThrow(() -> new IllegalArgumentException("GrowthSimulation not found: " + simulationId));
+        if (userId == null) {
+            simulations = growthSimulationRepository.findAllByOrderByIdDesc();
+        } else {
+            simulations = growthSimulationRepository.findAllByUserAccount_IdOrderByIdDesc(userId);
+        }
 
-    List<GrowthTimelineResponse> timeline = growthTimelineRepository
-            .findByGrowthSimulationIdOrderByDayAsc(simulationId)
-            .stream()
-            .map(GrowthTimelineResponse::new)
-            .toList();
+        return simulations.stream()
+                .map(GrowthSimulationSummaryResponse::new)
+                .toList();
+    }
 
-    return new GrowthSimulationResponse(simulation, timeline);
-}
+    @Transactional(readOnly = true)
+    public GrowthSimulationResponse getGrowthSimulation(Long simulationId) {
+        GrowthSimulation simulation = growthSimulationRepository.findById(simulationId)
+                .orElseThrow(() -> new IllegalArgumentException("GrowthSimulation not found: " + simulationId));
+
+        List<GrowthTimelineResponse> timeline = growthTimelineRepository
+                .findByGrowthSimulationIdOrderByDayAsc(simulationId)
+                .stream()
+                .map(GrowthTimelineResponse::new)
+                .toList();
+
+        return new GrowthSimulationResponse(simulation, timeline);
+    }
 
     private int normalizeDays(int days) {
         if (days <= 0) {

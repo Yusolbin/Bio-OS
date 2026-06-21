@@ -15,6 +15,10 @@ public class GrowthSimulation {
     @JoinColumn(name = "plant_type_id")
     private PlantType plantType;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_account_id")
+    private UserAccount userAccount;
+
     private int days;
 
     private double initialWater;
@@ -109,5 +113,13 @@ public class GrowthSimulation {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public UserAccount getUserAccount() {
+        return userAccount;
+    }
+
+    public void setUserAccount(UserAccount userAccount){
+        this.userAccount = userAccount;
     }
 }

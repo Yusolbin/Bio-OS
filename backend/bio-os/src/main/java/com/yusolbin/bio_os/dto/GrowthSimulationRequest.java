@@ -3,6 +3,8 @@ package com.yusolbin.bio_os.dto;
 public class GrowthSimulationRequest {
 
     private Long plantTypeId;
+    private Long userId;
+
     private double water;
     private double light;
     private double temperature;
@@ -58,5 +60,13 @@ public class GrowthSimulationRequest {
 
     public void setDays(int days) {
         this.days = days;
+    }
+
+    public Long getUserId(){
+        return userId;
+    }
+
+    public void setUserId(Long userId){
+        this.userId = userId;
     }
 }

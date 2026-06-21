@@ -63,6 +63,9 @@ const growthSummaryBox = document.getElementById("growthSummaryBox");
 const growthTimelineTable = document.getElementById("growthTimelineTable");
 const gorwthHistoryTable = document.getElementById("growthHistoryTable");
 
+const growthChartCanvas = document.getElementById("growthChartCanvas");
+const growthChartContext = growthChartCanvas ? growthChartCanvas.getContext("2d") : null;
+
 const playTimelineButton = document.getElementById("playTimelineButton");
 const pauseTimelineButton = document.getElementById("pauseTimelineButton");
 const resetTimelineButton = document.getElementById("resetTimelineButton");
@@ -586,6 +589,7 @@ async function loadGrowthSimulationDetail(simulationId) {
         const detail = await response.json();
 
         renderGrowthResult(detail);
+        drawGrowthChart(detail.timeline || []);
 
     } catch (error) {
         console.error(error);
@@ -611,6 +615,7 @@ function renderGrowthResult(result) {
     growthSummaryBox.textContent = result.summary || "No summary.";
 
     renderGrowthTimelineTable(currentGrowthTimeline);
+    drawGrowthChart(currentGrowthTimeline);
 
     if (currentGrowthTimeline.length > 0) {
         renderGrowthDay(0);
@@ -838,6 +843,180 @@ function getRiskClass(riskLevel) {
     }
 }
 
+function drawGrowthChart(timeline) {
+    if (!growthChartCanvas || !growthChartContext) {
+        return;
+    }
+
+    const ctx = growthChartContext;
+    const width = growthChartCanvas.width;
+    const height = growthChartCanvas.height;
+
+    ctx.clearRect(0, 0, width, height);
+
+    drawChartBackground(ctx, width, height);
+
+    if (!timeline || timeline.length === 0) {
+        ctx.font = "16px Arial";
+        ctx.fillStyle = "#64748b";
+        ctx.fillText("No growth timeline data.", 24, 42);
+        return;
+    }
+
+    const paddingLeft = 52;
+    const paddingRight = 24;
+    const paddingTop = 28;
+    const paddingBottom = 42;
+
+    const chartWidth = width - paddingLeft - paddingRight;
+    const chartHeight = height - paddingTop - paddingBottom;
+
+    const days = timeline.map((item) => Number(item.day || 0));
+    const growthScores = timeline.map((item) => Number(item.growthScore || 0));
+    const totalEnergies = timeline.map((item) => Number(item.totalEnergy || 0));
+
+    const maxDay = Math.max(...days, 1);
+    const maxValue = Math.max(160, ...growthScores, ...totalEnergies);
+
+    drawAxes(ctx, paddingLeft, paddingTop, chartWidth, chartHeight, maxDay, maxValue);
+    drawLineSeries(
+        ctx,
+        timeline,
+        "growthScore",
+        paddingLeft,
+        paddingTop,
+        chartWidth,
+        chartHeight,
+        maxDay,
+        maxValue,
+        "#2563eb"
+    );
+    drawLineSeries(
+        ctx,
+        timeline,
+        "totalEnergy",
+        paddingLeft,
+        paddingTop,
+        chartWidth,
+        chartHeight,
+        maxDay,
+        maxValue,
+        "#16a34a"
+    );
+
+    drawChartLegend(ctx, width);
+}
+
+function drawChartBackground(ctx, width, height) {
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.strokeStyle = "#e2e8f0";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(0.5, 0.5, width - 1, height - 1);
+}
+
+function drawAxes(ctx, left, top, chartWidth, chartHeight, maxDay, maxValue) {
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 1;
+
+    ctx.beginPath();
+    ctx.moveTo(left, top);
+    ctx.lineTo(left, top + chartHeight);
+    ctx.lineTo(left + chartWidth, top + chartHeight);
+    ctx.stroke();
+
+    ctx.font = "12px Arial";
+    ctx.fillStyle = "#64748b";
+
+    const ySteps = 4;
+
+    for (let i = 0; i <= ySteps; i++) {
+        const value = Math.round((maxValue / ySteps) * i);
+        const y = top + chartHeight - (value / maxValue) * chartHeight;
+
+        ctx.strokeStyle = "#f1f5f9";
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(left + chartWidth, y);
+        ctx.stroke();
+
+        ctx.fillStyle = "#64748b";
+        ctx.fillText(String(value), 12, y + 4);
+    }
+
+    const xSteps = Math.min(6, maxDay);
+
+    for (let i = 0; i <= xSteps; i++) {
+        const day = Math.round((maxDay / xSteps) * i);
+        const x = left + (day / maxDay) * chartWidth;
+
+        ctx.fillStyle = "#64748b";
+        ctx.fillText(`D${day}`, x - 10, top + chartHeight + 24);
+    }
+}
+
+function drawLineSeries(
+    ctx,
+    timeline,
+    key,
+    left,
+    top,
+    chartWidth,
+    chartHeight,
+    maxDay,
+    maxValue,
+    color
+) {
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 3;
+
+    ctx.beginPath();
+
+    timeline.forEach((item, index) => {
+        const day = Number(item.day || 0);
+        const value = Number(item[key] || 0);
+
+        const x = left + (day / maxDay) * chartWidth;
+        const y = top + chartHeight - (value / maxValue) * chartHeight;
+
+        if (index === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
+    });
+
+    ctx.stroke();
+
+    timeline.forEach((item) => {
+        const day = Number(item.day || 0);
+        const value = Number(item[key] || 0);
+
+        const x = left + (day / maxDay) * chartWidth;
+        const y = top + chartHeight - (value / maxValue) * chartHeight;
+
+        ctx.beginPath();
+        ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+    });
+}
+
+function drawChartLegend(ctx, width) {
+    ctx.font = "13px Arial";
+
+    ctx.fillStyle = "#2563eb";
+    ctx.fillRect(width - 210, 18, 12, 12);
+    ctx.fillStyle = "#334155";
+    ctx.fillText("Growth Score", width - 190, 29);
+
+    ctx.fillStyle = "#16a34a";
+    ctx.fillRect(width - 105, 18, 12, 12);
+    ctx.fillStyle = "#334155";
+    ctx.fillText("Energy", width - 85, 29);
+}
+
 loadPlantTypes();
 loadGeneRules();
 
@@ -856,3 +1035,5 @@ renderResult({
     riskLevel: "LOW",
     recommendation: "Press Run Simulation to start BIO-OS analysis.",
 });
+
+drawGrowthChart([]);

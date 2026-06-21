@@ -25,12 +25,16 @@ public class SimulationController {
     }
 
     @GetMapping("/logs")
-    public List<SimulationLogResponse> getSimulationLogs() {
-        return simulationService.getSimulationLogs();
+    public List<SimulationLogResponse> getSimulationLogs(
+        @RequestParam(required = false) Long userId
+    ) {
+        return simulationService.getSimulationLogs(userId);
     }
 
     @DeleteMapping("/logs")
-    public void clearSimulationLogs() {
-        simulationService.clearSimulationLogs();
+    public void clearSimulationLogs(
+        @RequestParam(required = false) Long userId
+    ) {
+        simulationService.clearSimulationLogs(userId);
     }
 }

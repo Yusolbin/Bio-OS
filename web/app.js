@@ -169,6 +169,12 @@ logoutButton.addEventListener("click", () => {
 });
 
 async function clearSimulationLogs() {
+    if(!currentUser){
+        alert("Simulation Log 삭제는 로그인 후 사용할 수 있습니다.");
+        authMessageBox.textContent = "Login required to clear simulation logs.";
+        return;
+    }
+
     const confirmed = confirm("저장된 Simulation Log를 모두 삭제하시겠습니까?");
 
     if (!confirmed) {
@@ -176,10 +182,13 @@ async function clearSimulationLogs() {
     }
 
     try {
-        const response = await fetch("http://localhost:8080/api/simulations/logs", {
+        const response = await fetch( 
+            `http://localhost:8080/api/simulations/logs?userId=${currentUser.userId}`,
+        {
             method: "DELETE",
+        
         });
-
+    
         if (!response.ok) {
             throw new Error("Failed to clear simulation logs: " + response.status);
         }
@@ -211,6 +220,12 @@ async function clearSimulationLogs() {
 }
 
 async function runSimulationFromInput() {
+    if (!currentUser){
+        alert("Run Simulation은 로그인 후 실행할 수 있습니다.");
+        authMessageBox.textContent = "Login required for Run Simulation";
+        return;
+    }
+
     const water = Number(waterInput.value);
     const light = Number(lightInput.value);
     const temperature = Number(temperatureInput.value);
@@ -223,6 +238,7 @@ async function runSimulationFromInput() {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
+                userId: currentUser.userId,
                 water: water,
                 light: light,
                 temperature: temperature,
@@ -311,8 +327,14 @@ function appendHistory(result) {
 }
 
 async function loadSimulationLogs() {
+    if(!currentUser) {
+        alert("Simulation Logs는 로그인 후 조회할 수 있습니다.");
+        authMessageBox.textContent = "Login required to load simulation logs.";
+        return;
+    }
+
     try {
-        const response = await fetch("http://localhost:8080/api/simulations/logs");
+        const response = await fetch(`http://localhost:8080/api/simulations/logs?userId=${currentUser.userId}`);
 
         if (!response.ok) {
             throw new Error("Failed to load simulation logs: " + response.status);

@@ -1,9 +1,11 @@
 package com.yusolbin.bio_os.model;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
@@ -38,8 +40,12 @@ public class SimulationLog {
     @jakarta.persistence.Column(columnDefinition = "TEXT")
     private String recommendation;
 
-private String riskLevel;
+    private String riskLevel;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_account_id")
+    private UserAccount userAccount;
+    
     public SimulationLog() {
     }
 
@@ -132,5 +138,13 @@ private String riskLevel;
 
     public String getRecommendation() {
         return recommendation;
+    }
+
+    public UserAccount getUserAccount() {
+        return userAccount;
+    }
+
+    public void setUserAccount(UserAccount userAccount){
+        this.userAccount = userAccount;
     }
 }

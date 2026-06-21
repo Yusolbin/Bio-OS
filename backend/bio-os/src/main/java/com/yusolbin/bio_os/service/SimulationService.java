@@ -7,7 +7,9 @@ import com.yusolbin.bio_os.model.GeneRule;
 import com.yusolbin.bio_os.model.SimulationLog;
 import com.yusolbin.bio_os.repository.GeneRuleRepository;
 import com.yusolbin.bio_os.repository.SimulationLogRepository;
+import com.yusolbin.bio_os.repository.UserAccountRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,15 +19,18 @@ public class SimulationService {
 
     private final SimulationLogRepository simulationLogRepository;
     private final GeneRuleRepository geneRuleRepository;
+    private final UserAccountRepository userAccountRepository;
 
     private int tick = 0;
 
     public SimulationService(
             SimulationLogRepository simulationLogRepository,
-            GeneRuleRepository geneRuleRepository
+            GeneRuleRepository geneRuleRepository,
+            UserAccountRepository userAccountRepository
     ) {
         this.simulationLogRepository = simulationLogRepository;
         this.geneRuleRepository = geneRuleRepository;
+        this.userAccountRepository = userAccountRepository;
     }
 
     private static class RuleEvaluationResult {
@@ -44,6 +49,7 @@ public class SimulationService {
         }
     }
 
+    @Transactional
     public SimulationResponse runSimulation(SimulationRequest request) {
         tick++;
 
@@ -86,6 +92,11 @@ public class SimulationService {
                 recommendation
         );
 
+        if (request.getUserId() != null) {
+            userAccountRepository.findById(request.getUserId())
+                    .ifPresent(log::setUserAccount);
+        }
+
         SimulationLog savedLog = simulationLogRepository.save(log);
 
         return new SimulationResponse(
@@ -106,15 +117,29 @@ public class SimulationService {
         );
     }
 
-    public List<SimulationLogResponse> getSimulationLogs() {
-        return simulationLogRepository.findAllByOrderByIdDesc()
+    @Transactional(readOnly = true)
+    public List<SimulationLogResponse> getSimulationLogs(Long userId) {
+        if (userId == null) {
+            return simulationLogRepository.findAllByOrderByIdDesc()
+                    .stream()
+                    .map(SimulationLogResponse::new)
+                    .toList();
+        }
+
+        return simulationLogRepository.findAllByUserAccount_IdOrderByIdDesc(userId)
                 .stream()
                 .map(SimulationLogResponse::new)
                 .toList();
     }
 
-    public void clearSimulationLogs() {
-        simulationLogRepository.deleteAll();
+    @Transactional
+    public void clearSimulationLogs(Long userId) {
+        if (userId == null) {
+            simulationLogRepository.deleteAll();
+            return;
+        }
+
+        simulationLogRepository.deleteByUserAccount_Id(userId);
     }
 
     private RuleEvaluationResult evaluateRules(double water, double light, double temperature) {

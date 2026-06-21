@@ -95,6 +95,8 @@ const adminEnvironmentChartContext = adminEnvironmentChartCanvas
     ? adminEnvironmentChartCanvas.getContext("2d")
     : null;
 
+const adminInsightList = document.getElementById("adminInsightList");
+
 runButton.addEventListener("click", () => {
     runSimulationFromInput();
 });
@@ -1272,6 +1274,29 @@ function renderAdminSummary(summary) {
 
     drawAdminRiskChart(summary);
     drawAdminEnvironmentChart(summary);
+    renderAdminInsights(summary.insights || []);
+}
+
+function renderAdminInsights(insights) {
+    if (!adminInsightList) {
+        return;
+    }
+
+    adminInsightList.innerHTML = "";
+
+    if (!insights || insights.length === 0) {
+        const emptyMessage = document.createElement("p");
+        emptyMessage.textContent = "No admin insights loaded.";
+        adminInsightList.appendChild(emptyMessage);
+        return;
+    }
+
+    insights.forEach((insight) => {
+        const item = document.createElement("div");
+        item.className = "admin-insight-item";
+        item.textContent = insight;
+        adminInsightList.appendChild(item);
+    });
 }
 
 loadPlantTypes();
@@ -1309,6 +1334,8 @@ drawAdminEnvironmentChart({
     averageTemperature: 0,
     averageHumidity: 0,
 });
+
+renderAdminInsights([]);
 
 function drawAdminEnvironmentChart(summary) {
     if (!adminEnvironmentChartCanvas || !adminEnvironmentChartContext) {

@@ -649,3 +649,26 @@ tbody tr:hover {
     max-width: 100%;
     border-radius: 12px;
 }
+
+.admin-insight-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.admin-insight-item {
+    padding: 12px 14px;
+    border-left: 5px solid #2563eb;
+    border-radius: 12px;
+    background: #f8fafc;
+    color: #0f172a;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.admin-insight-list p {
+    color: #64748b;
+    font-weight: 700;
+}

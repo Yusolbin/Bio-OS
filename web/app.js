@@ -28,7 +28,7 @@ const resetButton = document.getElementById("resetButton");
 const plantTypeSelect = document.getElementById("plantTypeSelect");
 const growthDaysInput = document.getElementById("growthDaysInput");
 const runGrowthButton = document.getElementById("runGrowthButton");
-const loadGrowthSimulationButton = document.getElementById("loadGrowthSimulationButton");
+const loadGrowthSimulationsButton = document.getElementById("loadGrowthSimulationsButton");
 
 const addRuleButton = document.getElementById("addRuleButton");
 const ruleList = document.getElementById("ruleList");
@@ -61,7 +61,7 @@ const growthVisualValue = document.getElementById("growthVisualValue");
 const growthCurrentDayValue = document.getElementById("growthCurrentDayValue");
 const growthSummaryBox = document.getElementById("growthSummaryBox");
 const growthTimelineTable = document.getElementById("growthTimelineTable");
-const gorwthHistoryTable = document.getElementById("growthHistoryTable");
+const growthHistoryTable = document.getElementById("growthHistoryTable");
 
 const growthChartCanvas = document.getElementById("growthChartCanvas");
 const growthChartContext = growthChartCanvas ? growthChartCanvas.getContext("2d") : null;
@@ -687,6 +687,7 @@ function renderGrowthDay(index) {
     growthVisualValue.textContent = visualKey;
 
     highlightGrowthTimelineRow(index);
+    drawGrowthChart(currentGrowthTimeline, currentGrowthDayIndex);
 }
 
 function highlightGrowthTimelineRow(index) {
@@ -843,7 +844,7 @@ function getRiskClass(riskLevel) {
     }
 }
 
-function drawGrowthChart(timeline) {
+function drawGrowthChart(timeline, activeIndex = -1) {
     if (!growthChartCanvas || !growthChartContext) {
         return;
     }
@@ -902,6 +903,18 @@ function drawGrowthChart(timeline) {
         maxDay,
         maxValue,
         "#16a34a"
+    );
+
+    drawActiveDayMarker(
+        ctx,
+        timeline,
+        activeIndex,
+        paddingLeft,
+        paddingTop,
+        chartWidth,
+        chartHeight,
+        maxDay,
+        maxValue
     );
 
     drawChartLegend(ctx, width);
@@ -1001,6 +1014,65 @@ function drawLineSeries(
         ctx.arc(x, y, 3.5, 0, Math.PI * 2);
         ctx.fill();
     });
+}
+
+function drawActiveDayMarker(
+    ctx,
+    timeline,
+    activeIndex,
+    left,
+    top,
+    chartWidth,
+    chartHeight,
+    maxDay,
+    maxValue
+) {
+    if (!timeline || timeline.length === 0) {
+        return;
+    }
+
+    if (activeIndex < 0 || activeIndex >= timeline.length) {
+        return;
+    }
+
+    const dayData = timeline[activeIndex];
+
+    const day = Number(dayData.day || 0);
+    const growthScore = Number(dayData.growthScore || 0);
+    const totalEnergy = Number(dayData.totalEnergy || 0);
+
+    const x = left + (day / maxDay) * chartWidth;
+    const growthY = top + chartHeight - (growthScore / maxValue) * chartHeight;
+    const energyY = top + chartHeight - (totalEnergy / maxValue) * chartHeight;
+
+    ctx.save();
+
+    ctx.strokeStyle = "#0f172a";
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([5, 5]);
+
+    ctx.beginPath();
+    ctx.moveTo(x, top);
+    ctx.lineTo(x, top + chartHeight);
+    ctx.stroke();
+
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "bold 12px Arial";
+    ctx.fillText(`Day ${day}`, x + 8, top + 14);
+
+    ctx.fillStyle = "#2563eb";
+    ctx.beginPath();
+    ctx.arc(x, growthY, 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#16a34a";
+    ctx.beginPath();
+    ctx.arc(x, energyY, 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
 }
 
 function drawChartLegend(ctx, width) {

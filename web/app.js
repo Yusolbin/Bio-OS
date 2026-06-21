@@ -87,6 +87,9 @@ const adminAverageLight = document.getElementById("adminAverageLight");
 const adminAverageTemperature = document.getElementById("adminAverageTemperature");
 const adminAverageHumidity = document.getElementById("adminAverageHumidity");
 
+const adminRiskChartCanvas = document.getElementById("adminRiskChartCanvas");
+const adminRiskChartContext = adminRiskChartCanvas ? adminRiskChartCanvas.getContext("2d") : null;
+
 runButton.addEventListener("click", () => {
     runSimulationFromInput();
 });
@@ -865,6 +868,113 @@ function getRiskClass(riskLevel) {
     }
 }
 
+function drawAdminRiskChart(summary) {
+    if (!adminRiskChartCanvas || !adminRiskChartContext) {
+        return;
+    }
+
+    const ctx = adminRiskChartContext;
+    const width = adminRiskChartCanvas.width;
+    const height = adminRiskChartCanvas.height;
+
+    ctx.clearRect(0, 0, width, height);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.strokeStyle = "#e2e8f0";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(0.5, 0.5, width - 1, height - 1);
+
+    const data = [
+        {
+            label: "CRITICAL",
+            value: Number(summary.criticalGrowthCount || 0),
+            color: "#be123c",
+        },
+        {
+            label: "HIGH",
+            value: Number(summary.highGrowthCount || 0),
+            color: "#c2410c",
+        },
+        {
+            label: "MEDIUM",
+            value: Number(summary.mediumGrowthCount || 0),
+            color: "#b45309",
+        },
+        {
+            label: "LOW",
+            value: Number(summary.lowGrowthCount || 0),
+            color: "#047857",
+        },
+    ];
+
+    const maxValue = Math.max(...data.map((item) => item.value), 1);
+
+    const paddingLeft = 48;
+    const paddingRight = 24;
+    const paddingTop = 28;
+    const paddingBottom = 42;
+
+    const chartWidth = width - paddingLeft - paddingRight;
+    const chartHeight = height - paddingTop - paddingBottom;
+
+    drawAdminRiskAxes(ctx, paddingLeft, paddingTop, chartWidth, chartHeight, maxValue);
+    drawAdminRiskBars(ctx, data, paddingLeft, paddingTop, chartWidth, chartHeight, maxValue);
+}
+
+function drawAdminRiskAxes(ctx, left, top, chartWidth, chartHeight, maxValue) {
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 1;
+
+    ctx.beginPath();
+    ctx.moveTo(left, top);
+    ctx.lineTo(left, top + chartHeight);
+    ctx.lineTo(left + chartWidth, top + chartHeight);
+    ctx.stroke();
+
+    ctx.font = "12px Arial";
+    ctx.fillStyle = "#64748b";
+
+    const ySteps = 4;
+
+    for (let i = 0; i <= ySteps; i++) {
+        const value = Math.round((maxValue / ySteps) * i);
+        const y = top + chartHeight - (value / maxValue) * chartHeight;
+
+        ctx.strokeStyle = "#f1f5f9";
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(left + chartWidth, y);
+        ctx.stroke();
+
+        ctx.fillStyle = "#64748b";
+        ctx.fillText(String(value), 16, y + 4);
+    }
+}
+
+function drawAdminRiskBars(ctx, data, left, top, chartWidth, chartHeight, maxValue) {
+    const gap = 18;
+    const barWidth = (chartWidth - gap * (data.length + 1)) / data.length;
+
+    data.forEach((item, index) => {
+        const x = left + gap + index * (barWidth + gap);
+        const barHeight = (item.value / maxValue) * chartHeight;
+        const y = top + chartHeight - barHeight;
+
+        ctx.fillStyle = item.color;
+        ctx.fillRect(x, y, barWidth, barHeight);
+
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "bold 13px Arial";
+        ctx.fillText(String(item.value), x + barWidth / 2 - 4, y - 8);
+
+        ctx.fillStyle = "#64748b";
+        ctx.font = "12px Arial";
+        ctx.fillText(item.label, x + 2, top + chartHeight + 24);
+    });
+}
+
 function drawGrowthChart(timeline, activeIndex = -1) {
     if (!growthChartCanvas || !growthChartContext) {
         return;
@@ -1154,6 +1264,8 @@ function renderAdminSummary(summary) {
         `MEDIUM: ${summary.mediumGrowthCount ?? 0}`,
         `LOW: ${summary.lowGrowthCount ?? 0}`,
     ].join("\n");
+
+    drawAdminRiskChart(summary);
 }
 
 loadPlantTypes();
@@ -1177,3 +1289,10 @@ renderResult({
 });
 
 drawGrowthChart([]);
+
+drawAdminRiskChart({
+    criticalGrowthCount: 0,
+    highGrowthCount: 0,
+    mediumGrowthCount: 0,
+    lowGrowthCount: 0,
+});

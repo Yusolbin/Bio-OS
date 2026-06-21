@@ -2,6 +2,7 @@ package com.yusolbin.bio_os.service;
 
 import com.yusolbin.bio_os.dto.AdminDashboardResponse;
 import com.yusolbin.bio_os.model.GrowthSimulation;
+import com.yusolbin.bio_os.model.SimulationLog;
 import com.yusolbin.bio_os.repository.GeneRuleRepository;
 import com.yusolbin.bio_os.repository.GrowthSimulationRepository;
 import com.yusolbin.bio_os.repository.PlantTypeRepository;
@@ -41,6 +42,8 @@ public class AdminDashboardService {
         List<GrowthSimulation> growthSimulations =
                 growthSimulationRepository.findAllByOrderByIdDesc();
 
+        List<SimulationLog> simulationLogs = simulationLogRepository.findAll();
+
         double averageGrowthScore = calculateAverageGrowthScore(growthSimulations);
 
         long criticalGrowthCount = countByRiskLevel(growthSimulations, "CRITICAL");
@@ -51,6 +54,11 @@ public class AdminDashboardService {
         String latestGrowthPlantType = "-";
         String latestGrowthRiskLevel = "-";
         String latestGrowthVisualState = "-";
+
+        double averageWater = calculateAverageWater(simulationLogs);
+        double averageLight = calculateAverageLight(simulationLogs);
+        double averageTemperature = calculateAverageTemperature(simulationLogs);
+        double averageHumidity = calculateAverageHumidity(simulationLogs);
 
         if (!growthSimulations.isEmpty()) {
             GrowthSimulation latest = growthSimulations.get(0);
@@ -66,6 +74,10 @@ public class AdminDashboardService {
                 simulationLogCount,
                 growthSimulationCount,
                 averageGrowthScore,
+                averageWater,
+                averageLight,
+                averageTemperature,
+                averageHumidity,
                 criticalGrowthCount,
                 highGrowthCount,
                 mediumGrowthCount,
@@ -101,4 +113,56 @@ public class AdminDashboardService {
     private double roundOne(double value) {
         return Math.round(value * 10.0) / 10.0;
     }
+
+    private double calculateAverageWater(List<SimulationLog> simulationLogs) {
+    if (simulationLogs.isEmpty()) {
+        return 0.0;
+    }
+
+    double average = simulationLogs.stream()
+            .mapToDouble(SimulationLog::getWater)
+            .average()
+            .orElse(0.0);
+
+    return roundOne(average);
+}
+
+private double calculateAverageLight(List<SimulationLog> simulationLogs) {
+    if (simulationLogs.isEmpty()) {
+        return 0.0;
+    }
+
+    double average = simulationLogs.stream()
+            .mapToDouble(SimulationLog::getLight)
+            .average()
+            .orElse(0.0);
+
+    return roundOne(average);
+}
+
+private double calculateAverageTemperature(List<SimulationLog> simulationLogs) {
+    if (simulationLogs.isEmpty()) {
+        return 0.0;
+    }
+
+    double average = simulationLogs.stream()
+            .mapToDouble(SimulationLog::getTemperature)
+            .average()
+            .orElse(0.0);
+
+    return roundOne(average);
+}
+
+private double calculateAverageHumidity(List<SimulationLog> simulationLogs) {
+    if (simulationLogs.isEmpty()) {
+        return 0.0;
+    }
+
+    double average = simulationLogs.stream()
+            .mapToDouble(SimulationLog::getHumidity)
+            .average()
+            .orElse(0.0);
+
+    return roundOne(average);
+}
 }

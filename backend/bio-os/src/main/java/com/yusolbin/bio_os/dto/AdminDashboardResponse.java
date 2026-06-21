@@ -9,6 +9,11 @@ public class AdminDashboardResponse {
 
     private double averageGrowthScore;
 
+    private double averageWater;
+    private double averageLight;
+    private double averageTemperature;
+    private double averageHumidity;
+
     private long criticalGrowthCount;
     private long highGrowthCount;
     private long mediumGrowthCount;
@@ -24,6 +29,10 @@ public class AdminDashboardResponse {
             long simulationLogCount,
             long growthSimulationCount,
             double averageGrowthScore,
+            double averageWater,
+            double averageLight,
+            double averageTemperature,
+            double averageHumidity,
             long criticalGrowthCount,
             long highGrowthCount,
             long mediumGrowthCount,
@@ -37,6 +46,10 @@ public class AdminDashboardResponse {
         this.simulationLogCount = simulationLogCount;
         this.growthSimulationCount = growthSimulationCount;
         this.averageGrowthScore = averageGrowthScore;
+        this.averageWater = averageWater;
+        this.averageLight = averageLight;
+        this.averageTemperature = averageTemperature;
+        this.averageHumidity = averageHumidity;
         this.criticalGrowthCount = criticalGrowthCount;
         this.highGrowthCount = highGrowthCount;
         this.mediumGrowthCount = mediumGrowthCount;
@@ -64,6 +77,22 @@ public class AdminDashboardResponse {
 
     public double getAverageGrowthScore() {
         return averageGrowthScore;
+    }
+
+    public double getAverageWater() {
+        return averageWater;
+    }
+
+    public double getAverageLight() {
+        return averageLight;
+    }
+
+    public double getAverageTemperature() {
+        return averageTemperature;
+    }
+
+    public double getAverageHumidity() {
+        return averageHumidity;
     }
 
     public long getCriticalGrowthCount() {

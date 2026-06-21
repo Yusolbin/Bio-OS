@@ -82,6 +82,11 @@ const adminLatestRiskLevel = document.getElementById("adminLatestRiskLevel");
 const adminLatestVisualState = document.getElementById("adminLatestVisualState");
 const adminRiskDistributionBox = document.getElementById("adminRiskDistributionBox");
 
+const adminAverageWater = document.getElementById("adminAverageWater");
+const adminAverageLight = document.getElementById("adminAverageLight");
+const adminAverageTemperature = document.getElementById("adminAverageTemperature");
+const adminAverageHumidity = document.getElementById("adminAverageHumidity");
+
 runButton.addEventListener("click", () => {
     runSimulationFromInput();
 });
@@ -1129,6 +1134,11 @@ function renderAdminSummary(summary) {
     adminSimulationLogCount.textContent = summary.simulationLogCount ?? 0;
     adminGrowthSimulationCount.textContent = summary.growthSimulationCount ?? 0;
     adminAverageGrowthScore.textContent = Number(summary.averageGrowthScore || 0).toFixed(1);
+
+    adminAverageWater.textContent = Number(summary.averageWater || 0).toFixed(1);
+    adminAverageLight.textContent = Number(summary.averageLight || 0).toFixed(1);
+    adminAverageTemperature.textContent = Number(summary.averageTemperature || 0).toFixed(1);
+    adminAverageHumidity.textContent = Number(summary.averageHumidity || 0).toFixed(1);
 
     adminLatestPlantType.textContent = summary.latestGrowthPlantType || "-";
 

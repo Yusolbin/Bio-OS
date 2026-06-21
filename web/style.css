@@ -796,3 +796,65 @@ tbody tr:hover {
     background: #16a34a;
     color: #ffffff;
 }
+
+.auth-status-box {
+    margin-top: 12px;
+    margin-bottom: 16px;
+    padding: 14px;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.auth-status-box span {
+    display: block;
+    margin-bottom: 8px;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.auth-status-box strong {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.auth-user-none {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+.auth-user-admin {
+    background: #7c3aed;
+    color: #ffffff;
+}
+
+.auth-user-normal {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.danger {
+    background: #dc2626;
+    color: #ffffff;
+}
+
+.danger:hover {
+    background: #b91c1c;
+}
+
+#authMessageBox {
+    margin-top: 14px;
+    min-height: 70px;
+    white-space: pre-wrap;
+}

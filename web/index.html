@@ -20,6 +20,40 @@
     </header>
 
     <main class="grid">
+<section class="card auth-card">
+    <h2>User Login</h2>
+    <p class="section-desc">
+        BIO-OS 사용자 계정을 등록하고 로그인합니다.
+    </p>
+
+    <div class="auth-status-box">
+        <span>Current User</span>
+        <strong id="currentUserText">Not logged in</strong>
+    </div>
+
+    <div class="input-grid">
+        <label>
+            Username
+            <input id="authUsernameInput" type="text" placeholder="Enter username">
+        </label>
+
+        <label>
+            Password
+            <input id="authPasswordInput" type="password" placeholder="Enter password">
+        </label>
+    </div>
+
+    <div class="button-row">
+        <button id="registerButton">Register</button>
+        <button id="loginButton" class="secondary">Login</button>
+        <button id="logoutButton" class="danger">Logout</button>
+    </div>
+
+    <pre id="authMessageBox">No auth action yet.</pre>
+</section>
+
+
+
         <section class="card control-panel">
             <h2>Environment Input</h2>
 

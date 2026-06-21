@@ -1,6 +1,7 @@
 let currentGrowthTimeline = [];
 let currentGrowthDayIndex = 0;
 let timelineTimer = null;
+let currentUser = loadCurrentUser();
 
 const plantImages = {
     stable: "assets/stable.png",
@@ -98,6 +99,14 @@ const adminEnvironmentChartContext = adminEnvironmentChartCanvas
 const adminInsightList = document.getElementById("adminInsightList");
 const adminOverallStatus = document.getElementById("adminOverallStatus");
 
+const authUsernameInput = document.getElementById("authUsernameInput");
+const authPasswordInput = document.getElementById("authPasswordInput");
+const registerButton = document.getElementById("registerButton");
+const loginButton = document.getElementById("loginButton");
+const logoutButton = document.getElementById("logoutButton");
+const currentUserText = document.getElementById("currentUserText");
+const authMessageBox = document.getElementById("authMessageBox");
+
 runButton.addEventListener("click", () => {
     runSimulationFromInput();
 });
@@ -145,6 +154,18 @@ resetTimelineButton.addEventListener("click", () => {
 
 loadAdminSummaryButton.addEventListener("click", () => {
     loadAdminSummary();
+});
+
+registerButton.addEventListener("click", () => {
+    registerUser();
+});
+
+loginButton.addEventListener("click", () => {
+    loginUser();
+});
+
+logoutButton.addEventListener("click", () => {
+    logoutUser();
 });
 
 async function clearSimulationLogs() {
@@ -1246,6 +1267,135 @@ async function loadAdminSummary() {
     }
 }
 
+async function registerUser() {
+    const username = authUsernameInput.value.trim();
+    const password = authPasswordInput.value;
+
+    if (!username || !password) {
+        authMessageBox.textContent = "Username과 Password를 입력해 주세요.";
+        return;
+    }
+
+    try {
+        const response = await fetch("http://localhost:8080/api/auth/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error("Register request failed: " + response.status);
+        }
+
+        const result = await response.json();
+
+        authMessageBox.textContent = JSON.stringify(result, null, 2);
+
+        if (result.success) {
+            saveCurrentUser(result);
+            renderAuthState();
+        }
+
+    } catch (error) {
+        console.error(error);
+        authMessageBox.textContent = "Register 실패. Spring Boot 서버가 켜져 있는지 확인해 주세요.";
+    }
+}
+
+async function loginUser() {
+    const username = authUsernameInput.value.trim();
+    const password = authPasswordInput.value;
+
+    if (!username || !password) {
+        authMessageBox.textContent = "Username과 Password를 입력해 주세요.";
+        return;
+    }
+
+    try {
+        const response = await fetch("http://localhost:8080/api/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error("Login request failed: " + response.status);
+        }
+
+        const result = await response.json();
+
+        authMessageBox.textContent = JSON.stringify(result, null, 2);
+
+        if (result.success) {
+            saveCurrentUser(result);
+            renderAuthState();
+        }
+
+    } catch (error) {
+        console.error(error);
+        authMessageBox.textContent = "Login 실패. Spring Boot 서버가 켜져 있는지 확인해 주세요.";
+    }
+}
+
+function logoutUser() {
+    localStorage.removeItem("bioOsCurrentUser");
+    currentUser = null;
+
+    authPasswordInput.value = "";
+    authMessageBox.textContent = "Logout successful.";
+
+    renderAuthState();
+}
+
+function saveCurrentUser(user) {
+    currentUser = {
+        userId: user.userId,
+        username: user.username,
+        role: user.role,
+    };
+
+    localStorage.setItem("bioOsCurrentUser", JSON.stringify(currentUser));
+}
+
+function loadCurrentUser() {
+    const savedUser = localStorage.getItem("bioOsCurrentUser");
+
+    if (!savedUser) {
+        return null;
+    }
+
+    try {
+        return JSON.parse(savedUser);
+    } catch (error) {
+        localStorage.removeItem("bioOsCurrentUser");
+        return null;
+    }
+}
+
+function renderAuthState() {
+    if (!currentUser) {
+        currentUserText.textContent = "Not logged in";
+        currentUserText.className = "auth-user-none";
+        return;
+    }
+
+    currentUserText.textContent =
+        `${currentUser.username} / ${currentUser.role} / ID ${currentUser.userId}`;
+
+    currentUserText.className =
+        currentUser.role === "ADMIN" ? "auth-user-admin" : "auth-user-normal";
+}
+
 function renderAdminSummary(summary) {
     adminPlantTypeCount.textContent = summary.plantTypeCount ?? 0;
     adminGeneRuleCount.textContent = summary.geneRuleCount ?? 0;
@@ -1340,10 +1490,6 @@ function getAdminStatusClass(status) {
             return "admin-status-info";
     }
 }
-
-loadPlantTypes();
-loadGeneRules();
-loadAdminSummary();
 
 renderResult({
     tick: 0,
@@ -1485,3 +1631,8 @@ function drawAdminEnvironmentBars(ctx, data, left, top, chartWidth, chartHeight,
         ctx.fillText(item.label, x + 2, top + chartHeight + 24);
     });
 }
+
+loadPlantTypes();
+loadGeneRules();
+loadAdminSummary();
+renderAuthState();

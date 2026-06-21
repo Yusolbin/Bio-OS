@@ -8,6 +8,7 @@ import com.yusolbin.bio_os.repository.GeneRuleRepository;
 import com.yusolbin.bio_os.repository.GrowthSimulationRepository;
 import com.yusolbin.bio_os.repository.PlantTypeRepository;
 import com.yusolbin.bio_os.repository.SimulationLogRepository;
+import com.yusolbin.bio_os.repository.UserAccountRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,17 +22,20 @@ public class AdminDashboardService {
     private final GeneRuleRepository geneRuleRepository;
     private final SimulationLogRepository simulationLogRepository;
     private final GrowthSimulationRepository growthSimulationRepository;
+    private final UserAccountRepository userAccountRepository;
 
     public AdminDashboardService(
             PlantTypeRepository plantTypeRepository,
             GeneRuleRepository geneRuleRepository,
             SimulationLogRepository simulationLogRepository,
-            GrowthSimulationRepository growthSimulationRepository
+            GrowthSimulationRepository growthSimulationRepository,
+            UserAccountRepository userAccountRepository
     ) {
         this.plantTypeRepository = plantTypeRepository;
         this.geneRuleRepository = geneRuleRepository;
         this.simulationLogRepository = simulationLogRepository;
         this.growthSimulationRepository = growthSimulationRepository;
+        this.userAccountRepository = userAccountRepository;
     }
 
     @Transactional(readOnly = true)
@@ -40,6 +44,7 @@ public class AdminDashboardService {
         long geneRuleCount = geneRuleRepository.count();
         long simulationLogCount = simulationLogRepository.count();
         long growthSimulationCount = growthSimulationRepository.count();
+        long userCount = userAccountRepository.count();
 
         List<GrowthSimulation> growthSimulations =
                 growthSimulationRepository.findAllByOrderByIdDesc();
@@ -88,6 +93,7 @@ public class AdminDashboardService {
                 geneRuleCount,
                 simulationLogCount,
                 growthSimulationCount,
+                userCount,
                 averageGrowthScore,
                 averageWater,
                 averageLight,

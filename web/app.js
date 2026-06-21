@@ -107,6 +107,8 @@ const logoutButton = document.getElementById("logoutButton");
 const currentUserText = document.getElementById("currentUserText");
 const authMessageBox = document.getElementById("authMessageBox");
 
+const adminUserCount = document.getElementById("adminUserCount");
+
 runButton.addEventListener("click", () => {
     runSimulationFromInput();
 });
@@ -1438,6 +1440,7 @@ function renderAdminSummary(summary) {
     adminGeneRuleCount.textContent = summary.geneRuleCount ?? 0;
     adminSimulationLogCount.textContent = summary.simulationLogCount ?? 0;
     adminGrowthSimulationCount.textContent = summary.growthSimulationCount ?? 0;
+    adminUserCount.textContent = summary.userCount ?? 0;
     adminAverageGrowthScore.textContent = Number(summary.averageGrowthScore || 0).toFixed(1);
 
     adminAverageWater.textContent = Number(summary.averageWater || 0).toFixed(1);

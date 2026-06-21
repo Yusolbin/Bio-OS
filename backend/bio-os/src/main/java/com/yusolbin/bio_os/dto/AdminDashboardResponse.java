@@ -10,6 +10,7 @@ public class AdminDashboardResponse {
     private long geneRuleCount;
     private long simulationLogCount;
     private long growthSimulationCount;
+    private long userCount;
 
     private double averageGrowthScore;
 
@@ -35,6 +36,7 @@ public class AdminDashboardResponse {
             long geneRuleCount,
             long simulationLogCount,
             long growthSimulationCount,
+            long userCount,
             double averageGrowthScore,
             double averageWater,
             double averageLight,
@@ -54,6 +56,7 @@ public class AdminDashboardResponse {
         this.geneRuleCount = geneRuleCount;
         this.simulationLogCount = simulationLogCount;
         this.growthSimulationCount = growthSimulationCount;
+        this.userCount = userCount;
         this.averageGrowthScore = averageGrowthScore;
         this.averageWater = averageWater;
         this.averageLight = averageLight;
@@ -140,5 +143,9 @@ public class AdminDashboardResponse {
 
     public List<AdminInsightResponse> getInsights() {
         return insights;
+    }
+
+    public long getUserCount() {
+        return userCount;
     }
 }

@@ -1,6 +1,7 @@
 package com.yusolbin.bio_os.service;
 
 import com.yusolbin.bio_os.dto.AdminDashboardResponse;
+import com.yusolbin.bio_os.dto.AdminInsightResponse;
 import com.yusolbin.bio_os.model.GrowthSimulation;
 import com.yusolbin.bio_os.model.SimulationLog;
 import com.yusolbin.bio_os.repository.GeneRuleRepository;
@@ -69,7 +70,7 @@ public class AdminDashboardService {
             latestGrowthVisualState = latest.getFinalVisualState();
         }
 
-        List<String> insights = generateInsights(
+        List<AdminInsightResponse> insights = generateInsights(
                 averageGrowthScore,
                 averageWater,
                 averageLight,
@@ -175,7 +176,7 @@ public class AdminDashboardService {
         return roundOne(average);
     }
 
-    private List<String> generateInsights(
+    private List<AdminInsightResponse> generateInsights(
             double averageGrowthScore,
             double averageWater,
             double averageLight,
@@ -185,51 +186,90 @@ public class AdminDashboardService {
             long highGrowthCount,
             long growthSimulationCount
     ) {
-        List<String> insights = new ArrayList<>();
+        List<AdminInsightResponse> insights = new ArrayList<>();
 
         if (growthSimulationCount == 0) {
-            insights.add("No growth simulation data yet. Run Growth Simulation to generate admin insights.");
+            insights.add(new AdminInsightResponse(
+                    "INFO",
+                    "No growth simulation data yet. Run Growth Simulation to generate admin insights."
+            ));
             return insights;
         }
 
         if (criticalGrowthCount > 0) {
-            insights.add("Critical growth simulations detected. Immediate review is recommended.");
+            insights.add(new AdminInsightResponse(
+                    "CRITICAL",
+                    "Critical growth simulations detected. Immediate review is recommended."
+            ));
         }
 
         if (highGrowthCount > 0) {
-            insights.add("High-risk growth simulations exist. Check unstable environmental patterns.");
+            insights.add(new AdminInsightResponse(
+                    "WARNING",
+                    "High-risk growth simulations exist. Check unstable environmental patterns."
+            ));
         }
 
         if (averageGrowthScore < 40) {
-            insights.add("Average growth score is low. Current simulation conditions may be harmful.");
+            insights.add(new AdminInsightResponse(
+                    "CRITICAL",
+                    "Average growth score is low. Current simulation conditions may be harmful."
+            ));
         } else if (averageGrowthScore >= 75) {
-            insights.add("Average growth score is strong. Most growth simulations are performing well.");
+            insights.add(new AdminInsightResponse(
+                    "STABLE",
+                    "Average growth score is strong. Most growth simulations are performing well."
+            ));
         }
 
         if (averageWater < 30) {
-            insights.add("Average water level is low. Drought-related risks may increase.");
+            insights.add(new AdminInsightResponse(
+                    "WARNING",
+                    "Average water level is low. Drought-related risks may increase."
+            ));
         } else if (averageWater > 120) {
-            insights.add("Average water level is very high. Over-watering patterns should be reviewed.");
+            insights.add(new AdminInsightResponse(
+                    "WARNING",
+                    "Average water level is very high. Over-watering patterns should be reviewed."
+            ));
         }
 
         if (averageLight < 30) {
-            insights.add("Average light level is low. Photosynthesis performance may be limited.");
+            insights.add(new AdminInsightResponse(
+                    "WARNING",
+                    "Average light level is low. Photosynthesis performance may be limited."
+            ));
         }
 
         if (averageTemperature > 35) {
-            insights.add("Average temperature is high. Heat stress may become a repeated risk factor.");
+            insights.add(new AdminInsightResponse(
+                    "WARNING",
+                    "Average temperature is high. Heat stress may become a repeated risk factor."
+            ));
         } else if (averageTemperature < 10) {
-            insights.add("Average temperature is low. Cold stress may become a repeated risk factor.");
+            insights.add(new AdminInsightResponse(
+                    "WARNING",
+                    "Average temperature is low. Cold stress may become a repeated risk factor."
+            ));
         }
 
         if (averageHumidity < 35) {
-            insights.add("Average humidity is low. Dry environment patterns may affect long-term growth.");
+            insights.add(new AdminInsightResponse(
+                    "WARNING",
+                    "Average humidity is low. Dry environment patterns may affect long-term growth."
+            ));
         } else if (averageHumidity > 85) {
-            insights.add("Average humidity is very high. Excess moisture conditions should be monitored.");
+            insights.add(new AdminInsightResponse(
+                    "WARNING",
+                    "Average humidity is very high. Excess moisture conditions should be monitored."
+            ));
         }
 
         if (insights.isEmpty()) {
-            insights.add("Growth system looks stable. No major admin warning detected.");
+            insights.add(new AdminInsightResponse(
+                    "STABLE",
+                    "Growth system looks stable. No major admin warning detected."
+            ));
         }
 
         return insights;

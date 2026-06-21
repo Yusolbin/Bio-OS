@@ -1,5 +1,7 @@
 package com.yusolbin.bio_os.dto;
 
+import com.yusolbin.bio_os.dto.AdminInsightResponse;
+
 import java.util.List;
 
 public class AdminDashboardResponse {
@@ -25,7 +27,7 @@ public class AdminDashboardResponse {
     private String latestGrowthRiskLevel;
     private String latestGrowthVisualState;
 
-    private List<String> insights;
+    private List<AdminInsightResponse> insights;
 
     public AdminDashboardResponse(
             long plantTypeCount,
@@ -44,7 +46,7 @@ public class AdminDashboardResponse {
             String latestGrowthPlantType,
             String latestGrowthRiskLevel,
             String latestGrowthVisualState,
-            List<String> insights
+            List<AdminInsightResponse> insights
     ) {
         this.plantTypeCount = plantTypeCount;
         this.geneRuleCount = geneRuleCount;
@@ -129,7 +131,7 @@ public class AdminDashboardResponse {
         return latestGrowthVisualState;
     }
 
-    public List<String> getInsights() {
+    public List<AdminInsightResponse> getInsights() {
         return insights;
     }
 }

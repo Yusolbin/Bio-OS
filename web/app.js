@@ -1293,10 +1293,33 @@ function renderAdminInsights(insights) {
 
     insights.forEach((insight) => {
         const item = document.createElement("div");
-        item.className = "admin-insight-item";
-        item.textContent = insight;
+
+        const severity = insight.severity || "INFO";
+        const message = insight.message || String(insight);
+
+        item.className = `admin-insight-item ${getAdminInsightClass(severity)}`;
+
+        item.innerHTML = `
+            <span class="admin-insight-severity">${severity}</span>
+            <span class="admin-insight-message">${message}</span>
+        `;
+
         adminInsightList.appendChild(item);
     });
+}
+
+function getAdminInsightClass(severity) {
+    switch (severity) {
+        case "CRITICAL":
+            return "admin-insight-critical";
+        case "WARNING":
+            return "admin-insight-warning";
+        case "STABLE":
+            return "admin-insight-stable";
+        case "INFO":
+        default:
+            return "admin-insight-info";
+    }
 }
 
 loadPlantTypes();

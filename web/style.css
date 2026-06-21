@@ -672,3 +672,81 @@ tbody tr:hover {
     color: #64748b;
     font-weight: 700;
 }
+
+.admin-insight-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.admin-insight-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 14px;
+    border-left: 5px solid #2563eb;
+    border-radius: 12px;
+    background: #f8fafc;
+    color: #0f172a;
+    line-height: 1.5;
+}
+
+.admin-insight-severity {
+    width: fit-content;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+}
+
+.admin-insight-message {
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.admin-insight-critical {
+    border-left-color: #dc2626;
+    background: #fef2f2;
+}
+
+.admin-insight-critical .admin-insight-severity {
+    background: #dc2626;
+    color: #ffffff;
+}
+
+.admin-insight-warning {
+    border-left-color: #f97316;
+    background: #fff7ed;
+}
+
+.admin-insight-warning .admin-insight-severity {
+    background: #f97316;
+    color: #ffffff;
+}
+
+.admin-insight-info {
+    border-left-color: #2563eb;
+    background: #eff6ff;
+}
+
+.admin-insight-info .admin-insight-severity {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.admin-insight-stable {
+    border-left-color: #16a34a;
+    background: #f0fdf4;
+}
+
+.admin-insight-stable .admin-insight-severity {
+    background: #16a34a;
+    color: #ffffff;
+}
+
+.admin-insight-list p {
+    color: #64748b;
+    font-weight: 700;
+}

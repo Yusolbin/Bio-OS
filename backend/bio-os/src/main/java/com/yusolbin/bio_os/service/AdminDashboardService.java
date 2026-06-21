@@ -81,6 +81,8 @@ public class AdminDashboardService {
                 growthSimulationCount
         );
 
+        String overallStatus = determineOverallStatus(insights);
+
         return new AdminDashboardResponse(
                 plantTypeCount,
                 geneRuleCount,
@@ -98,6 +100,7 @@ public class AdminDashboardService {
                 latestGrowthPlantType,
                 latestGrowthRiskLevel,
                 latestGrowthVisualState,
+                overallStatus,
                 insights
         );
     }
@@ -274,6 +277,31 @@ public class AdminDashboardService {
 
         return insights;
     }
+
+    private String determineOverallStatus(List<AdminInsightResponse> insights) {
+    boolean hasCritical = insights.stream()
+            .anyMatch(insight -> "CRITICAL".equals(insight.getSeverity()));
+
+    if (hasCritical) {
+        return "CRITICAL";
+    }
+
+    boolean hasWarning = insights.stream()
+            .anyMatch(insight -> "WARNING".equals(insight.getSeverity()));
+
+    if (hasWarning) {
+        return "WARNING";
+    }
+
+    boolean hasStable = insights.stream()
+            .anyMatch(insight -> "STABLE".equals(insight.getSeverity()));
+
+    if (hasStable) {
+        return "STABLE";
+    }
+
+    return "INFO";
+}
 
     private double roundOne(double value) {
         return Math.round(value * 10.0) / 10.0;

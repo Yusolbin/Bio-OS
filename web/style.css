@@ -750,3 +750,49 @@ tbody tr:hover {
     color: #64748b;
     font-weight: 700;
 }
+
+.admin-status-panel {
+    margin-top: 16px;
+    margin-bottom: 18px;
+    padding: 16px;
+    border-radius: 18px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+.admin-status-panel span {
+    display: block;
+    margin-bottom: 8px;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.admin-status-panel strong {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+}
+
+.admin-status-critical {
+    background: #dc2626;
+    color: #ffffff;
+}
+
+.admin-status-warning {
+    background: #f97316;
+    color: #ffffff;
+}
+
+.admin-status-info {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.admin-status-stable {
+    background: #16a34a;
+    color: #ffffff;
+}

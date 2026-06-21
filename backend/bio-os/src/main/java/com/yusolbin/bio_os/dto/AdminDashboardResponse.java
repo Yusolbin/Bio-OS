@@ -26,6 +26,7 @@ public class AdminDashboardResponse {
     private String latestGrowthPlantType;
     private String latestGrowthRiskLevel;
     private String latestGrowthVisualState;
+    private String overallStatus;
 
     private List<AdminInsightResponse> insights;
 
@@ -46,6 +47,7 @@ public class AdminDashboardResponse {
             String latestGrowthPlantType,
             String latestGrowthRiskLevel,
             String latestGrowthVisualState,
+            String overallStatus,
             List<AdminInsightResponse> insights
     ) {
         this.plantTypeCount = plantTypeCount;
@@ -64,6 +66,7 @@ public class AdminDashboardResponse {
         this.latestGrowthPlantType = latestGrowthPlantType;
         this.latestGrowthRiskLevel = latestGrowthRiskLevel;
         this.latestGrowthVisualState = latestGrowthVisualState;
+        this.overallStatus = overallStatus;
         this.insights = insights;
     }
 
@@ -129,6 +132,10 @@ public class AdminDashboardResponse {
 
     public String getLatestGrowthVisualState() {
         return latestGrowthVisualState;
+    }
+
+    public String getOverallStatus() {
+        return overallStatus;
     }
 
     public List<AdminInsightResponse> getInsights() {

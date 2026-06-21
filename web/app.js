@@ -96,6 +96,7 @@ const adminEnvironmentChartContext = adminEnvironmentChartCanvas
     : null;
 
 const adminInsightList = document.getElementById("adminInsightList");
+const adminOverallStatus = document.getElementById("adminOverallStatus");
 
 runButton.addEventListener("click", () => {
     runSimulationFromInput();
@@ -1257,6 +1258,10 @@ function renderAdminSummary(summary) {
     adminAverageTemperature.textContent = Number(summary.averageTemperature || 0).toFixed(1);
     adminAverageHumidity.textContent = Number(summary.averageHumidity || 0).toFixed(1);
 
+    const overallStatus = summary.overallStatus || "INFO";
+    adminOverallStatus.textContent = overallStatus;
+    adminOverallStatus.className = getAdminStatusClass(overallStatus);
+
     adminLatestPlantType.textContent = summary.latestGrowthPlantType || "-";
 
     const latestRisk = summary.latestGrowthRiskLevel || "LOW";
@@ -1319,6 +1324,20 @@ function getAdminInsightClass(severity) {
         case "INFO":
         default:
             return "admin-insight-info";
+    }
+}
+
+function getAdminStatusClass(status) {
+    switch (status) {
+        case "CRITICAL":
+            return "admin-status-critical";
+        case "WARNING":
+            return "admin-status-warning";
+        case "STABLE":
+            return "admin-status-stable";
+        case "INFO":
+        default:
+            return "admin-status-info";
     }
 }
 

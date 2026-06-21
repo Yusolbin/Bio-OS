@@ -71,6 +71,60 @@
             <button id="loadGrowthSimulationsButton" class="secondary">Load Growth Simulations</button>
         </section>
 
+        <section class="card admin-card">
+    <h2>Admin Dashboard</h2>
+    <p class="section-desc">
+        전체 시뮬레이션 데이터와 성장 예측 통계를 요약합니다.
+    </p>
+
+    <button id="loadAdminSummaryButton" class="secondary">Load Admin Summary</button>
+
+    <div class="admin-grid">
+        <div>
+            <span>Plant Types</span>
+            <strong id="adminPlantTypeCount">0</strong>
+        </div>
+
+        <div>
+            <span>Gene Rules</span>
+            <strong id="adminGeneRuleCount">0</strong>
+        </div>
+
+        <div>
+            <span>Simulation Logs</span>
+            <strong id="adminSimulationLogCount">0</strong>
+        </div>
+
+        <div>
+            <span>Growth Simulations</span>
+            <strong id="adminGrowthSimulationCount">0</strong>
+        </div>
+
+        <div>
+            <span>Average Growth Score</span>
+            <strong id="adminAverageGrowthScore">0.0</strong>
+        </div>
+
+        <div>
+            <span>Latest Plant</span>
+            <strong id="adminLatestPlantType">-</strong>
+        </div>
+
+        <div>
+            <span>Latest Risk</span>
+            <strong id="adminLatestRiskLevel" class="risk-badge risk-low">-</strong>
+        </div>
+
+        <div>
+            <span>Latest Visual</span>
+            <strong id="adminLatestVisualState">-</strong>
+        </div>
+    </div>
+
+    <h3>Risk Distribution</h3>
+    <pre id="adminRiskDistributionBox">No admin data loaded.</pre>
+</section>
+
         <section class="card rule-panel">
             <h2>Gene Rule Input</h2>
 

@@ -70,6 +70,18 @@ const playTimelineButton = document.getElementById("playTimelineButton");
 const pauseTimelineButton = document.getElementById("pauseTimelineButton");
 const resetTimelineButton = document.getElementById("resetTimelineButton");
 
+const loadAdminSummaryButton = document.getElementById("loadAdminSummaryButton");
+
+const adminPlantTypeCount = document.getElementById("adminPlantTypeCount");
+const adminGeneRuleCount = document.getElementById("adminGeneRuleCount");
+const adminSimulationLogCount = document.getElementById("adminSimulationLogCount");
+const adminGrowthSimulationCount = document.getElementById("adminGrowthSimulationCount");
+const adminAverageGrowthScore = document.getElementById("adminAverageGrowthScore");
+const adminLatestPlantType = document.getElementById("adminLatestPlantType");
+const adminLatestRiskLevel = document.getElementById("adminLatestRiskLevel");
+const adminLatestVisualState = document.getElementById("adminLatestVisualState");
+const adminRiskDistributionBox = document.getElementById("adminRiskDistributionBox");
+
 runButton.addEventListener("click", () => {
     runSimulationFromInput();
 });
@@ -113,6 +125,10 @@ pauseTimelineButton.addEventListener("click", () => {
 
 resetTimelineButton.addEventListener("click", () => {
     resetGrowthTimeline();
+});
+
+loadAdminSummaryButton.addEventListener("click", () => {
+    loadAdminSummary();
 });
 
 async function clearSimulationLogs() {
@@ -1089,8 +1105,50 @@ function drawChartLegend(ctx, width) {
     ctx.fillText("Energy", width - 85, 29);
 }
 
+async function loadAdminSummary() {
+    try {
+        const response = await fetch("http://localhost:8080/api/admin/summary");
+
+        if (!response.ok) {
+            throw new Error("Failed to load admin summary: " + response.status);
+        }
+
+        const summary = await response.json();
+
+        renderAdminSummary(summary);
+
+    } catch (error) {
+        console.error(error);
+        alert("Admin Summary 조회에 실패했습니다. Spring Boot 서버가 켜져 있는지 확인해 주세요.");
+    }
+}
+
+function renderAdminSummary(summary) {
+    adminPlantTypeCount.textContent = summary.plantTypeCount ?? 0;
+    adminGeneRuleCount.textContent = summary.geneRuleCount ?? 0;
+    adminSimulationLogCount.textContent = summary.simulationLogCount ?? 0;
+    adminGrowthSimulationCount.textContent = summary.growthSimulationCount ?? 0;
+    adminAverageGrowthScore.textContent = Number(summary.averageGrowthScore || 0).toFixed(1);
+
+    adminLatestPlantType.textContent = summary.latestGrowthPlantType || "-";
+
+    const latestRisk = summary.latestGrowthRiskLevel || "LOW";
+    adminLatestRiskLevel.textContent = latestRisk;
+    adminLatestRiskLevel.className = `risk-badge ${getRiskClass(latestRisk)}`;
+
+    adminLatestVisualState.textContent = summary.latestGrowthVisualState || "-";
+
+    adminRiskDistributionBox.textContent = [
+        `CRITICAL: ${summary.criticalGrowthCount ?? 0}`,
+        `HIGH: ${summary.highGrowthCount ?? 0}`,
+        `MEDIUM: ${summary.mediumGrowthCount ?? 0}`,
+        `LOW: ${summary.lowGrowthCount ?? 0}`,
+    ].join("\n");
+}
+
 loadPlantTypes();
 loadGeneRules();
+loadAdminSummary();
 
 renderResult({
     tick: 0,

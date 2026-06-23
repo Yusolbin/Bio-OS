@@ -109,6 +109,9 @@ const authMessageBox = document.getElementById("authMessageBox");
 
 const adminUserCount = document.getElementById("adminUserCount");
 
+const authGuardMessage = document.getElementById("authGuardMessage");
+const adminDashboardCard = document.getElementById("adminDashboardCard");
+
 runButton.addEventListener("click", () => {
     runSimulationFromInput();
 });
@@ -380,6 +383,12 @@ function appendHistoryFromLog(log) {
 }
 
 async function createGeneRule() {
+    if(!currentUser || currentUser.role !== "ADMIN"){
+        alert("Gene Rule 관리는 ADMIN 계정만 사용할 수 있습니다.");
+        authMessageBox.textContent = "ADMIN role required for Gene Rule management.";
+        return;
+    }
+
     const fieldName = document.getElementById("ruleField").value;
     const operator = document.getElementById("ruleOperator").value;
     const threshold = Number(document.getElementById("ruleThreshold").value);
@@ -1289,6 +1298,11 @@ function drawChartLegend(ctx, width) {
 }
 
 async function loadAdminSummary() {
+    if(!currentUser || currentUser.role !== "ADMIN") {
+        alert("Admin Dashboard는 ADMIN 계정만 사용할 수 있습니다.");
+        authMessageBox.textContent = "ADMIN role required for Admin Dashboard";
+        return;
+    }
     try {
         const response = await fetch("http://localhost:8080/api/admin/summary");
 
@@ -1425,6 +1439,9 @@ function renderAuthState() {
     if (!currentUser) {
         currentUserText.textContent = "Not logged in";
         currentUserText.className = "auth-user-none";
+
+        applyAuthGuard();
+
         return;
     }
 
@@ -1433,6 +1450,59 @@ function renderAuthState() {
 
     currentUserText.className =
         currentUser.role === "ADMIN" ? "auth-user-admin" : "auth-user-normal";
+
+    applyAuthGuard();
+}
+
+function applyAuthGuard() {
+    const loggedIn = Boolean(currentUser);
+    const isAdmin = loggedIn && currentUser.role === "ADMIN";
+
+    setButtonEnabled(runButton, loggedIn);
+    setButtonEnabled(randomButton, loggedIn);
+    setButtonEnabled(loadLogsButton, loggedIn);
+    setButtonEnabled(resetButton, loggedIn);
+
+    setButtonEnabled(runGrowthButton, loggedIn);
+    setButtonEnabled(loadGrowthSimulationsButton, loggedIn);
+
+    setButtonEnabled(addRuleButton, isAdmin);
+    setButtonEnabled(loadAdminSummaryButton, isAdmin);
+
+    if (adminDashboardCard) {
+        adminDashboardCard.classList.toggle("locked-card", !isAdmin);
+    }
+
+    if (!authGuardMessage) {
+        return;
+    }
+
+    if (!loggedIn) {
+        authGuardMessage.textContent =
+            "Login required: Simulation, Growth Simulation, Logs, and Admin Dashboard are locked.";
+        authGuardMessage.className = "auth-guard-message auth-guard-locked";
+        return;
+    }
+
+    if (!isAdmin) {
+        authGuardMessage.textContent =
+            "USER mode: You can run simulations and view your own logs. Admin Dashboard is locked.";
+        authGuardMessage.className = "auth-guard-message auth-guard-user";
+        return;
+    }
+
+    authGuardMessage.textContent =
+        "ADMIN mode: All BIO-OS features are available.";
+    authGuardMessage.className = "auth-guard-message auth-guard-admin";
+}
+
+function setButtonEnabled(button, enabled) {
+    if (!button) {
+        return;
+    }
+
+    button.disabled = !enabled;
+    button.classList.toggle("disabled-button", !enabled);
 }
 
 function renderAdminSummary(summary) {

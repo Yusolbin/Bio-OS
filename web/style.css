@@ -858,3 +858,54 @@ tbody tr:hover {
     min-height: 70px;
     white-space: pre-wrap;
 }
+
+.auth-guard-message {
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.5;
+}
+
+.auth-guard-locked {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.auth-guard-user {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+}
+
+.auth-guard-admin {
+    background: #f5f3ff;
+    color: #6d28d9;
+    border: 1px solid #ddd6fe;
+}
+
+.disabled-button {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.locked-card {
+    opacity: 0.65;
+    position: relative;
+}
+
+.locked-card::after {
+    content: "ADMIN ONLY";
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #0f172a;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+}

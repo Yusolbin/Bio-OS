@@ -3,6 +3,10 @@ let currentGrowthDayIndex = 0;
 let timelineTimer = null;
 let currentUser = loadCurrentUser();
 
+if (!currentUser) {
+    window.location.href = "auth.html";
+}
+
 const plantImages = {
     stable: "assets/stable.png",
     drought_mode: "assets/drought_mode.png",
@@ -77,16 +81,18 @@ const adminPlantTypeCount = document.getElementById("adminPlantTypeCount");
 const adminGeneRuleCount = document.getElementById("adminGeneRuleCount");
 const adminSimulationLogCount = document.getElementById("adminSimulationLogCount");
 const adminGrowthSimulationCount = document.getElementById("adminGrowthSimulationCount");
+const adminUserCount = document.getElementById("adminUserCount");
 const adminAverageGrowthScore = document.getElementById("adminAverageGrowthScore");
-const adminLatestPlantType = document.getElementById("adminLatestPlantType");
-const adminLatestRiskLevel = document.getElementById("adminLatestRiskLevel");
-const adminLatestVisualState = document.getElementById("adminLatestVisualState");
-const adminRiskDistributionBox = document.getElementById("adminRiskDistributionBox");
 
 const adminAverageWater = document.getElementById("adminAverageWater");
 const adminAverageLight = document.getElementById("adminAverageLight");
 const adminAverageTemperature = document.getElementById("adminAverageTemperature");
 const adminAverageHumidity = document.getElementById("adminAverageHumidity");
+
+const adminLatestPlantType = document.getElementById("adminLatestPlantType");
+const adminLatestRiskLevel = document.getElementById("adminLatestRiskLevel");
+const adminLatestVisualState = document.getElementById("adminLatestVisualState");
+const adminRiskDistributionBox = document.getElementById("adminRiskDistributionBox");
 
 const adminRiskChartCanvas = document.getElementById("adminRiskChartCanvas");
 const adminRiskChartContext = adminRiskChartCanvas ? adminRiskChartCanvas.getContext("2d") : null;
@@ -99,16 +105,7 @@ const adminEnvironmentChartContext = adminEnvironmentChartCanvas
 const adminInsightList = document.getElementById("adminInsightList");
 const adminOverallStatus = document.getElementById("adminOverallStatus");
 
-const authUsernameInput = document.getElementById("authUsernameInput");
-const authPasswordInput = document.getElementById("authPasswordInput");
-const registerButton = document.getElementById("registerButton");
-const loginButton = document.getElementById("loginButton");
 const logoutButton = document.getElementById("logoutButton");
-const currentUserText = document.getElementById("currentUserText");
-const authMessageBox = document.getElementById("authMessageBox");
-
-const adminUserCount = document.getElementById("adminUserCount");
-
 const authGuardMessage = document.getElementById("authGuardMessage");
 const adminDashboardCard = document.getElementById("adminDashboardCard");
 
@@ -161,22 +158,14 @@ loadAdminSummaryButton.addEventListener("click", () => {
     loadAdminSummary();
 });
 
-registerButton.addEventListener("click", () => {
-    registerUser();
-});
-
-loginButton.addEventListener("click", () => {
-    loginUser();
-});
-
 logoutButton.addEventListener("click", () => {
     logoutUser();
 });
 
 async function clearSimulationLogs() {
-    if(!currentUser){
+    if (!currentUser) {
         alert("Simulation Log 삭제는 로그인 후 사용할 수 있습니다.");
-        authMessageBox.textContent = "Login required to clear simulation logs.";
+        showDashboardMessage("Login required to clear simulation logs.");
         return;
     }
 
@@ -187,13 +176,13 @@ async function clearSimulationLogs() {
     }
 
     try {
-        const response = await fetch( 
+        const response = await fetch(
             `http://localhost:8080/api/simulations/logs?userId=${currentUser.userId}`,
-        {
-            method: "DELETE",
-        
-        });
-    
+            {
+                method: "DELETE",
+            }
+        );
+
         if (!response.ok) {
             throw new Error("Failed to clear simulation logs: " + response.status);
         }
@@ -225,9 +214,9 @@ async function clearSimulationLogs() {
 }
 
 async function runSimulationFromInput() {
-    if (!currentUser){
+    if (!currentUser) {
         alert("Run Simulation은 로그인 후 실행할 수 있습니다.");
-        authMessageBox.textContent = "Login required for Run Simulation";
+        showDashboardMessage("Login required for Run Simulation.");
         return;
     }
 
@@ -332,14 +321,16 @@ function appendHistory(result) {
 }
 
 async function loadSimulationLogs() {
-    if(!currentUser) {
+    if (!currentUser) {
         alert("Simulation Logs는 로그인 후 조회할 수 있습니다.");
-        authMessageBox.textContent = "Login required to load simulation logs.";
+        showDashboardMessage("Login required to load simulation logs.");
         return;
     }
 
     try {
-        const response = await fetch(`http://localhost:8080/api/simulations/logs?userId=${currentUser.userId}`);
+        const response = await fetch(
+            `http://localhost:8080/api/simulations/logs?userId=${currentUser.userId}`
+        );
 
         if (!response.ok) {
             throw new Error("Failed to load simulation logs: " + response.status);
@@ -383,9 +374,9 @@ function appendHistoryFromLog(log) {
 }
 
 async function createGeneRule() {
-    if(!currentUser || currentUser.role !== "ADMIN"){
+    if (!currentUser || currentUser.role !== "ADMIN") {
         alert("Gene Rule 관리는 ADMIN 계정만 사용할 수 있습니다.");
-        authMessageBox.textContent = "ADMIN role required for Gene Rule management.";
+        showDashboardMessage("ADMIN role required for Gene Rule management.");
         return;
     }
 
@@ -470,6 +461,8 @@ async function loadGeneRules() {
             const toggleButton = document.createElement("button");
             toggleButton.className = "mini-button toggle-button";
             toggleButton.textContent = rule.active ? "Disable" : "Enable";
+            toggleButton.disabled = !isAdminUser();
+            toggleButton.classList.toggle("disabled-button", !isAdminUser());
             toggleButton.addEventListener("click", () => {
                 toggleGeneRule(rule.id);
             });
@@ -477,6 +470,8 @@ async function loadGeneRules() {
             const deleteButton = document.createElement("button");
             deleteButton.className = "mini-button delete-button";
             deleteButton.textContent = "Delete";
+            deleteButton.disabled = !isAdminUser();
+            deleteButton.classList.toggle("disabled-button", !isAdminUser());
             deleteButton.addEventListener("click", () => {
                 deleteGeneRule(rule.id);
             });
@@ -497,6 +492,12 @@ async function loadGeneRules() {
 }
 
 async function toggleGeneRule(ruleId) {
+    if (!isAdminUser()) {
+        alert("Gene Rule 관리는 ADMIN 계정만 사용할 수 있습니다.");
+        showDashboardMessage("ADMIN role required for Gene Rule management.");
+        return;
+    }
+
     try {
         const response = await fetch(`http://localhost:8080/api/rules/${ruleId}/toggle`, {
             method: "PATCH",
@@ -515,6 +516,12 @@ async function toggleGeneRule(ruleId) {
 }
 
 async function deleteGeneRule(ruleId) {
+    if (!isAdminUser()) {
+        alert("Gene Rule 관리는 ADMIN 계정만 사용할 수 있습니다.");
+        showDashboardMessage("ADMIN role required for Gene Rule management.");
+        return;
+    }
+
     const confirmed = confirm("이 Gene Rule을 삭제하시겠습니까?");
 
     if (!confirmed) {
@@ -572,9 +579,9 @@ async function loadPlantTypes() {
 }
 
 async function runGrowthSimulation() {
-    if(!currentUser){
+    if (!currentUser) {
         alert("Growth Simulation은 로그인 후 실행할 수 있습니다.");
-        authMessageBox.textContent = "Login required for Growth Simulation.";
+        showDashboardMessage("Login required for Growth Simulation.");
         return;
     }
 
@@ -619,9 +626,9 @@ async function runGrowthSimulation() {
 }
 
 async function loadGrowthSimulations() {
-    if (!currentUser){
+    if (!currentUser) {
         alert("Saved Growth Simulations는 로그인 후 확인할 수 있습니다.");
-        authMessageBox.textContent = "Login required to load saved growth simulations.";
+        showDashboardMessage("Login required to load saved growth simulations.");
         return;
     }
 
@@ -716,7 +723,7 @@ function renderGrowthResult(result) {
     growthSummaryBox.textContent = result.summary || "No summary.";
 
     renderGrowthTimelineTable(currentGrowthTimeline);
-    drawGrowthChart(currentGrowthTimeline);
+    drawGrowthChart(currentGrowthTimeline, 0);
 
     if (currentGrowthTimeline.length > 0) {
         renderGrowthDay(0);
@@ -845,103 +852,123 @@ function resetGrowthTimeline() {
     renderGrowthDay(0);
 }
 
-function makeRecommendation(result) {
-    const activeStates = result.activeStates || [];
-    const visualKey = result.visualState || result.visual || "stable";
-
-    if (result.tick === 0) {
-        return "Press Run Simulation to start BIO-OS analysis.";
+async function loadAdminSummary() {
+    if (!isAdminUser()) {
+        alert("Admin Dashboard는 ADMIN 계정만 사용할 수 있습니다.");
+        showDashboardMessage("ADMIN role required for Admin Dashboard.");
+        return;
     }
 
-    if (visualKey === "dead_critical") {
-        return [
-            "Predicted Risk: Critical Survival Failure",
-            "Reason: Energy level is extremely low.",
-            "Suggestion: Increase water input and reduce temperature immediately.",
-        ].join("\n");
-    }
+    try {
+        const response = await fetch("http://localhost:8080/api/admin/summary");
 
-    if (activeStates.includes("RecoveryMode")) {
-        return [
-            "Predicted Risk: Recovery Mode",
-            "Reason: Water input is high enough to trigger recovery.",
-            "Suggestion: Maintain moderate temperature and stable light exposure.",
-        ].join("\n");
-    }
+        if (!response.ok) {
+            throw new Error("Failed to load admin summary: " + response.status);
+        }
 
-    if (activeStates.includes("HeatStress")) {
-        return [
-            "Predicted Risk: Heat Stress",
-            "Reason: Temperature is above the configured threshold.",
-            "Suggestion: Lower temperature below 35.",
-        ].join("\n");
-    }
+        const summary = await response.json();
 
-    if (activeStates.includes("DroughtMode")) {
-        return [
-            "Predicted Risk: Drought Stress",
-            "Reason: Water input is below the configured threshold.",
-            "Suggestion: Increase water input gradually.",
-        ].join("\n");
-    }
+        renderAdminSummary(summary);
 
-    if ((result.lastAction || "").includes("Pruning")) {
-        return [
-            "Predicted Risk: Pruning Risk",
-            "Reason: The plant system selected pruning as a survival action.",
-            "Suggestion: Stabilize water and light conditions.",
-        ].join("\n");
+    } catch (error) {
+        console.error(error);
+        alert("Admin Summary 조회에 실패했습니다. Spring Boot 서버가 켜져 있는지 확인해 주세요.");
     }
+}
 
-    return [
-        "Predicted Risk: Stable / Growth Friendly",
-        "Reason: Current environment is within a stable range.",
-        "Suggestion: Maintain current environment.",
+function renderAdminSummary(summary) {
+    adminPlantTypeCount.textContent = summary.plantTypeCount ?? 0;
+    adminGeneRuleCount.textContent = summary.geneRuleCount ?? 0;
+    adminSimulationLogCount.textContent = summary.simulationLogCount ?? 0;
+    adminGrowthSimulationCount.textContent = summary.growthSimulationCount ?? 0;
+    adminUserCount.textContent = summary.userCount ?? 0;
+
+    adminAverageGrowthScore.textContent = Number(summary.averageGrowthScore || 0).toFixed(1);
+    adminAverageWater.textContent = Number(summary.averageWater || 0).toFixed(1);
+    adminAverageLight.textContent = Number(summary.averageLight || 0).toFixed(1);
+    adminAverageTemperature.textContent = Number(summary.averageTemperature || 0).toFixed(1);
+    adminAverageHumidity.textContent = Number(summary.averageHumidity || 0).toFixed(1);
+
+    const overallStatus = summary.overallStatus || "INFO";
+    adminOverallStatus.textContent = overallStatus;
+    adminOverallStatus.className = getAdminStatusClass(overallStatus);
+
+    adminLatestPlantType.textContent = summary.latestGrowthPlantType || "-";
+
+    const latestRisk = summary.latestGrowthRiskLevel || "LOW";
+    adminLatestRiskLevel.textContent = latestRisk;
+    adminLatestRiskLevel.className = `risk-badge ${getRiskClass(latestRisk)}`;
+
+    adminLatestVisualState.textContent = summary.latestGrowthVisualState || "-";
+
+    adminRiskDistributionBox.textContent = [
+        `CRITICAL: ${summary.criticalGrowthCount ?? 0}`,
+        `HIGH: ${summary.highGrowthCount ?? 0}`,
+        `MEDIUM: ${summary.mediumGrowthCount ?? 0}`,
+        `LOW: ${summary.lowGrowthCount ?? 0}`,
     ].join("\n");
+
+    drawAdminRiskChart(summary);
+    drawAdminEnvironmentChart(summary);
+    renderAdminInsights(summary.insights || []);
 }
 
-function randomRange(min, max) {
-    return min + (max - min) * Math.random();
-}
-
-function formatOperator(operator) {
-    switch (operator) {
-        case "LT":
-            return "<";
-        case "GT":
-            return ">";
-        case "LTE":
-            return "<=";
-        case "GTE":
-            return ">=";
-        case "EQ":
-            return "=";
-        default:
-            return operator;
-    }
-}
-
-function formatSignedNumber(value) {
-    const numberValue = Number(value || 0);
-
-    if (numberValue > 0) {
-        return `+${numberValue.toFixed(1)}`;
+function renderAdminInsights(insights) {
+    if (!adminInsightList) {
+        return;
     }
 
-    return numberValue.toFixed(1);
+    adminInsightList.innerHTML = "";
+
+    if (!insights || insights.length === 0) {
+        const emptyMessage = document.createElement("p");
+        emptyMessage.textContent = "No admin insights loaded.";
+        adminInsightList.appendChild(emptyMessage);
+        return;
+    }
+
+    insights.forEach((insight) => {
+        const item = document.createElement("div");
+
+        const severity = insight.severity || "INFO";
+        const message = insight.message || String(insight);
+
+        item.className = `admin-insight-item ${getAdminInsightClass(severity)}`;
+
+        item.innerHTML = `
+            <span class="admin-insight-severity">${severity}</span>
+            <span class="admin-insight-message">${message}</span>
+        `;
+
+        adminInsightList.appendChild(item);
+    });
 }
 
-function getRiskClass(riskLevel) {
-    switch (riskLevel) {
+function getAdminInsightClass(severity) {
+    switch (severity) {
         case "CRITICAL":
-            return "risk-critical";
-        case "HIGH":
-            return "risk-high";
-        case "MEDIUM":
-            return "risk-medium";
-        case "LOW":
+            return "admin-insight-critical";
+        case "WARNING":
+            return "admin-insight-warning";
+        case "STABLE":
+            return "admin-insight-stable";
+        case "INFO":
         default:
-            return "risk-low";
+            return "admin-insight-info";
+    }
+}
+
+function getAdminStatusClass(status) {
+    switch (status) {
+        case "CRITICAL":
+            return "admin-status-critical";
+        case "WARNING":
+            return "admin-status-warning";
+        case "STABLE":
+            return "admin-status-stable";
+        case "INFO":
+        default:
+            return "admin-status-info";
     }
 }
 
@@ -1052,6 +1079,113 @@ function drawAdminRiskBars(ctx, data, left, top, chartWidth, chartHeight, maxVal
     });
 }
 
+function drawAdminEnvironmentChart(summary) {
+    if (!adminEnvironmentChartCanvas || !adminEnvironmentChartContext) {
+        return;
+    }
+
+    const ctx = adminEnvironmentChartContext;
+    const width = adminEnvironmentChartCanvas.width;
+    const height = adminEnvironmentChartCanvas.height;
+
+    ctx.clearRect(0, 0, width, height);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.strokeStyle = "#e2e8f0";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(0.5, 0.5, width - 1, height - 1);
+
+    const data = [
+        {
+            label: "Water",
+            value: Number(summary.averageWater || 0),
+            color: "#2563eb",
+        },
+        {
+            label: "Light",
+            value: Number(summary.averageLight || 0),
+            color: "#eab308",
+        },
+        {
+            label: "Temp",
+            value: Number(summary.averageTemperature || 0),
+            color: "#ef4444",
+        },
+        {
+            label: "Humidity",
+            value: Number(summary.averageHumidity || 0),
+            color: "#06b6d4",
+        },
+    ];
+
+    const maxValue = Math.max(100, ...data.map((item) => item.value));
+
+    const paddingLeft = 48;
+    const paddingRight = 24;
+    const paddingTop = 28;
+    const paddingBottom = 42;
+
+    const chartWidth = width - paddingLeft - paddingRight;
+    const chartHeight = height - paddingTop - paddingBottom;
+
+    drawAdminEnvironmentAxes(ctx, paddingLeft, paddingTop, chartWidth, chartHeight, maxValue);
+    drawAdminEnvironmentBars(ctx, data, paddingLeft, paddingTop, chartWidth, chartHeight, maxValue);
+}
+
+function drawAdminEnvironmentAxes(ctx, left, top, chartWidth, chartHeight, maxValue) {
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 1;
+
+    ctx.beginPath();
+    ctx.moveTo(left, top);
+    ctx.lineTo(left, top + chartHeight);
+    ctx.lineTo(left + chartWidth, top + chartHeight);
+    ctx.stroke();
+
+    ctx.font = "12px Arial";
+    ctx.fillStyle = "#64748b";
+
+    const ySteps = 4;
+
+    for (let i = 0; i <= ySteps; i++) {
+        const value = Math.round((maxValue / ySteps) * i);
+        const y = top + chartHeight - (value / maxValue) * chartHeight;
+
+        ctx.strokeStyle = "#f1f5f9";
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(left + chartWidth, y);
+        ctx.stroke();
+
+        ctx.fillStyle = "#64748b";
+        ctx.fillText(String(value), 16, y + 4);
+    }
+}
+
+function drawAdminEnvironmentBars(ctx, data, left, top, chartWidth, chartHeight, maxValue) {
+    const gap = 18;
+    const barWidth = (chartWidth - gap * (data.length + 1)) / data.length;
+
+    data.forEach((item, index) => {
+        const x = left + gap + index * (barWidth + gap);
+        const barHeight = (item.value / maxValue) * chartHeight;
+        const y = top + chartHeight - barHeight;
+
+        ctx.fillStyle = item.color;
+        ctx.fillRect(x, y, barWidth, barHeight);
+
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "bold 13px Arial";
+        ctx.fillText(item.value.toFixed(1), x + barWidth / 2 - 12, y - 8);
+
+        ctx.fillStyle = "#64748b";
+        ctx.font = "12px Arial";
+        ctx.fillText(item.label, x + 2, top + chartHeight + 24);
+    });
+}
+
 function drawGrowthChart(timeline, activeIndex = -1) {
     if (!growthChartCanvas || !growthChartContext) {
         return;
@@ -1088,6 +1222,7 @@ function drawGrowthChart(timeline, activeIndex = -1) {
     const maxValue = Math.max(160, ...growthScores, ...totalEnergies);
 
     drawAxes(ctx, paddingLeft, paddingTop, chartWidth, chartHeight, maxDay, maxValue);
+
     drawLineSeries(
         ctx,
         timeline,
@@ -1100,6 +1235,7 @@ function drawGrowthChart(timeline, activeIndex = -1) {
         maxValue,
         "#2563eb"
     );
+
     drawLineSeries(
         ctx,
         timeline,
@@ -1297,127 +1433,110 @@ function drawChartLegend(ctx, width) {
     ctx.fillText("Energy", width - 85, 29);
 }
 
-async function loadAdminSummary() {
-    if(!currentUser || currentUser.role !== "ADMIN") {
-        alert("Admin Dashboard는 ADMIN 계정만 사용할 수 있습니다.");
-        authMessageBox.textContent = "ADMIN role required for Admin Dashboard";
-        return;
+function makeRecommendation(result) {
+    const activeStates = result.activeStates || [];
+    const visualKey = result.visualState || result.visual || "stable";
+
+    if (result.tick === 0) {
+        return "Press Run Simulation to start BIO-OS analysis.";
     }
-    try {
-        const response = await fetch("http://localhost:8080/api/admin/summary");
 
-        if (!response.ok) {
-            throw new Error("Failed to load admin summary: " + response.status);
-        }
+    if (visualKey === "dead_critical") {
+        return [
+            "Predicted Risk: Critical Survival Failure",
+            "Reason: Energy level is extremely low.",
+            "Suggestion: Increase water input and reduce temperature immediately.",
+        ].join("\n");
+    }
 
-        const summary = await response.json();
+    if (activeStates.includes("RecoveryMode")) {
+        return [
+            "Predicted Risk: Recovery Mode",
+            "Reason: Water input is high enough to trigger recovery.",
+            "Suggestion: Maintain moderate temperature and stable light exposure.",
+        ].join("\n");
+    }
 
-        renderAdminSummary(summary);
+    if (activeStates.includes("HeatStress")) {
+        return [
+            "Predicted Risk: Heat Stress",
+            "Reason: Temperature is above the configured threshold.",
+            "Suggestion: Lower temperature below 35.",
+        ].join("\n");
+    }
 
-    } catch (error) {
-        console.error(error);
-        alert("Admin Summary 조회에 실패했습니다. Spring Boot 서버가 켜져 있는지 확인해 주세요.");
+    if (activeStates.includes("DroughtMode")) {
+        return [
+            "Predicted Risk: Drought Stress",
+            "Reason: Water input is below the configured threshold.",
+            "Suggestion: Increase water input gradually.",
+        ].join("\n");
+    }
+
+    if ((result.lastAction || "").includes("Pruning")) {
+        return [
+            "Predicted Risk: Pruning Risk",
+            "Reason: The plant system selected pruning as a survival action.",
+            "Suggestion: Stabilize water and light conditions.",
+        ].join("\n");
+    }
+
+    return [
+        "Predicted Risk: Stable / Growth Friendly",
+        "Reason: Current environment is within a stable range.",
+        "Suggestion: Maintain current environment.",
+    ].join("\n");
+}
+
+function randomRange(min, max) {
+    return min + (max - min) * Math.random();
+}
+
+function formatOperator(operator) {
+    switch (operator) {
+        case "LT":
+            return "<";
+        case "GT":
+            return ">";
+        case "LTE":
+            return "<=";
+        case "GTE":
+            return ">=";
+        case "EQ":
+            return "=";
+        default:
+            return operator;
     }
 }
 
-async function registerUser() {
-    const username = authUsernameInput.value.trim();
-    const password = authPasswordInput.value;
+function formatSignedNumber(value) {
+    const numberValue = Number(value || 0);
 
-    if (!username || !password) {
-        authMessageBox.textContent = "Username과 Password를 입력해 주세요.";
-        return;
+    if (numberValue > 0) {
+        return `+${numberValue.toFixed(1)}`;
     }
 
-    try {
-        const response = await fetch("http://localhost:8080/api/auth/register", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                username: username,
-                password: password,
-            }),
-        });
-
-        if (!response.ok) {
-            throw new Error("Register request failed: " + response.status);
-        }
-
-        const result = await response.json();
-
-        authMessageBox.textContent = JSON.stringify(result, null, 2);
-
-        if (result.success) {
-            saveCurrentUser(result);
-            renderAuthState();
-        }
-
-    } catch (error) {
-        console.error(error);
-        authMessageBox.textContent = "Register 실패. Spring Boot 서버가 켜져 있는지 확인해 주세요.";
-    }
+    return numberValue.toFixed(1);
 }
 
-async function loginUser() {
-    const username = authUsernameInput.value.trim();
-    const password = authPasswordInput.value;
-
-    if (!username || !password) {
-        authMessageBox.textContent = "Username과 Password를 입력해 주세요.";
-        return;
-    }
-
-    try {
-        const response = await fetch("http://localhost:8080/api/auth/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                username: username,
-                password: password,
-            }),
-        });
-
-        if (!response.ok) {
-            throw new Error("Login request failed: " + response.status);
-        }
-
-        const result = await response.json();
-
-        authMessageBox.textContent = JSON.stringify(result, null, 2);
-
-        if (result.success) {
-            saveCurrentUser(result);
-            renderAuthState();
-        }
-
-    } catch (error) {
-        console.error(error);
-        authMessageBox.textContent = "Login 실패. Spring Boot 서버가 켜져 있는지 확인해 주세요.";
+function getRiskClass(riskLevel) {
+    switch (riskLevel) {
+        case "CRITICAL":
+            return "risk-critical";
+        case "HIGH":
+            return "risk-high";
+        case "MEDIUM":
+            return "risk-medium";
+        case "LOW":
+        default:
+            return "risk-low";
     }
 }
 
 function logoutUser() {
     localStorage.removeItem("bioOsCurrentUser");
     currentUser = null;
-
-    authPasswordInput.value = "";
-    authMessageBox.textContent = "Logout successful.";
-
-    renderAuthState();
-}
-
-function saveCurrentUser(user) {
-    currentUser = {
-        userId: user.userId,
-        username: user.username,
-        role: user.role,
-    };
-
-    localStorage.setItem("bioOsCurrentUser", JSON.stringify(currentUser));
+    window.location.href = "auth.html";
 }
 
 function loadCurrentUser() {
@@ -1437,19 +1556,9 @@ function loadCurrentUser() {
 
 function renderAuthState() {
     if (!currentUser) {
-        currentUserText.textContent = "Not logged in";
-        currentUserText.className = "auth-user-none";
-
-        applyAuthGuard();
-
+        window.location.href = "auth.html";
         return;
     }
-
-    currentUserText.textContent =
-        `${currentUser.username} / ${currentUser.role} / ID ${currentUser.userId}`;
-
-    currentUserText.className =
-        currentUser.role === "ADMIN" ? "auth-user-admin" : "auth-user-normal";
 
     applyAuthGuard();
 }
@@ -1505,100 +1614,14 @@ function setButtonEnabled(button, enabled) {
     button.classList.toggle("disabled-button", !enabled);
 }
 
-function renderAdminSummary(summary) {
-    adminPlantTypeCount.textContent = summary.plantTypeCount ?? 0;
-    adminGeneRuleCount.textContent = summary.geneRuleCount ?? 0;
-    adminSimulationLogCount.textContent = summary.simulationLogCount ?? 0;
-    adminGrowthSimulationCount.textContent = summary.growthSimulationCount ?? 0;
-    adminUserCount.textContent = summary.userCount ?? 0;
-    adminAverageGrowthScore.textContent = Number(summary.averageGrowthScore || 0).toFixed(1);
-
-    adminAverageWater.textContent = Number(summary.averageWater || 0).toFixed(1);
-    adminAverageLight.textContent = Number(summary.averageLight || 0).toFixed(1);
-    adminAverageTemperature.textContent = Number(summary.averageTemperature || 0).toFixed(1);
-    adminAverageHumidity.textContent = Number(summary.averageHumidity || 0).toFixed(1);
-
-    const overallStatus = summary.overallStatus || "INFO";
-    adminOverallStatus.textContent = overallStatus;
-    adminOverallStatus.className = getAdminStatusClass(overallStatus);
-
-    adminLatestPlantType.textContent = summary.latestGrowthPlantType || "-";
-
-    const latestRisk = summary.latestGrowthRiskLevel || "LOW";
-    adminLatestRiskLevel.textContent = latestRisk;
-    adminLatestRiskLevel.className = `risk-badge ${getRiskClass(latestRisk)}`;
-
-    adminLatestVisualState.textContent = summary.latestGrowthVisualState || "-";
-
-    adminRiskDistributionBox.textContent = [
-        `CRITICAL: ${summary.criticalGrowthCount ?? 0}`,
-        `HIGH: ${summary.highGrowthCount ?? 0}`,
-        `MEDIUM: ${summary.mediumGrowthCount ?? 0}`,
-        `LOW: ${summary.lowGrowthCount ?? 0}`,
-    ].join("\n");
-
-    drawAdminRiskChart(summary);
-    drawAdminEnvironmentChart(summary);
-    renderAdminInsights(summary.insights || []);
-}
-
-function renderAdminInsights(insights) {
-    if (!adminInsightList) {
-        return;
-    }
-
-    adminInsightList.innerHTML = "";
-
-    if (!insights || insights.length === 0) {
-        const emptyMessage = document.createElement("p");
-        emptyMessage.textContent = "No admin insights loaded.";
-        adminInsightList.appendChild(emptyMessage);
-        return;
-    }
-
-    insights.forEach((insight) => {
-        const item = document.createElement("div");
-
-        const severity = insight.severity || "INFO";
-        const message = insight.message || String(insight);
-
-        item.className = `admin-insight-item ${getAdminInsightClass(severity)}`;
-
-        item.innerHTML = `
-            <span class="admin-insight-severity">${severity}</span>
-            <span class="admin-insight-message">${message}</span>
-        `;
-
-        adminInsightList.appendChild(item);
-    });
-}
-
-function getAdminInsightClass(severity) {
-    switch (severity) {
-        case "CRITICAL":
-            return "admin-insight-critical";
-        case "WARNING":
-            return "admin-insight-warning";
-        case "STABLE":
-            return "admin-insight-stable";
-        case "INFO":
-        default:
-            return "admin-insight-info";
+function showDashboardMessage(message) {
+    if (authGuardMessage) {
+        authGuardMessage.textContent = message;
     }
 }
 
-function getAdminStatusClass(status) {
-    switch (status) {
-        case "CRITICAL":
-            return "admin-status-critical";
-        case "WARNING":
-            return "admin-status-warning";
-        case "STABLE":
-            return "admin-status-stable";
-        case "INFO":
-        default:
-            return "admin-status-info";
-    }
+function isAdminUser() {
+    return Boolean(currentUser && currentUser.role === "ADMIN");
 }
 
 renderResult({
@@ -1635,114 +1658,10 @@ drawAdminEnvironmentChart({
 
 renderAdminInsights([]);
 
-function drawAdminEnvironmentChart(summary) {
-    if (!adminEnvironmentChartCanvas || !adminEnvironmentChartContext) {
-        return;
-    }
-
-    const ctx = adminEnvironmentChartContext;
-    const width = adminEnvironmentChartCanvas.width;
-    const height = adminEnvironmentChartCanvas.height;
-
-    ctx.clearRect(0, 0, width, height);
-
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, width, height);
-
-    ctx.strokeStyle = "#e2e8f0";
-    ctx.lineWidth = 1;
-    ctx.strokeRect(0.5, 0.5, width - 1, height - 1);
-
-    const data = [
-        {
-            label: "Water",
-            value: Number(summary.averageWater || 0),
-            color: "#2563eb",
-        },
-        {
-            label: "Light",
-            value: Number(summary.averageLight || 0),
-            color: "#eab308",
-        },
-        {
-            label: "Temp",
-            value: Number(summary.averageTemperature || 0),
-            color: "#ef4444",
-        },
-        {
-            label: "Humidity",
-            value: Number(summary.averageHumidity || 0),
-            color: "#06b6d4",
-        },
-    ];
-
-    const maxValue = Math.max(100, ...data.map((item) => item.value));
-
-    const paddingLeft = 48;
-    const paddingRight = 24;
-    const paddingTop = 28;
-    const paddingBottom = 42;
-
-    const chartWidth = width - paddingLeft - paddingRight;
-    const chartHeight = height - paddingTop - paddingBottom;
-
-    drawAdminEnvironmentAxes(ctx, paddingLeft, paddingTop, chartWidth, chartHeight, maxValue);
-    drawAdminEnvironmentBars(ctx, data, paddingLeft, paddingTop, chartWidth, chartHeight, maxValue);
-}
-
-function drawAdminEnvironmentAxes(ctx, left, top, chartWidth, chartHeight, maxValue) {
-    ctx.strokeStyle = "#cbd5e1";
-    ctx.lineWidth = 1;
-
-    ctx.beginPath();
-    ctx.moveTo(left, top);
-    ctx.lineTo(left, top + chartHeight);
-    ctx.lineTo(left + chartWidth, top + chartHeight);
-    ctx.stroke();
-
-    ctx.font = "12px Arial";
-    ctx.fillStyle = "#64748b";
-
-    const ySteps = 4;
-
-    for (let i = 0; i <= ySteps; i++) {
-        const value = Math.round((maxValue / ySteps) * i);
-        const y = top + chartHeight - (value / maxValue) * chartHeight;
-
-        ctx.strokeStyle = "#f1f5f9";
-        ctx.beginPath();
-        ctx.moveTo(left, y);
-        ctx.lineTo(left + chartWidth, y);
-        ctx.stroke();
-
-        ctx.fillStyle = "#64748b";
-        ctx.fillText(String(value), 16, y + 4);
-    }
-}
-
-function drawAdminEnvironmentBars(ctx, data, left, top, chartWidth, chartHeight, maxValue) {
-    const gap = 18;
-    const barWidth = (chartWidth - gap * (data.length + 1)) / data.length;
-
-    data.forEach((item, index) => {
-        const x = left + gap + index * (barWidth + gap);
-        const barHeight = (item.value / maxValue) * chartHeight;
-        const y = top + chartHeight - barHeight;
-
-        ctx.fillStyle = item.color;
-        ctx.fillRect(x, y, barWidth, barHeight);
-
-        ctx.fillStyle = "#0f172a";
-        ctx.font = "bold 13px Arial";
-        ctx.fillText(item.value.toFixed(1), x + barWidth / 2 - 12, y - 8);
-
-        ctx.fillStyle = "#64748b";
-        ctx.font = "12px Arial";
-        ctx.fillText(item.label, x + 2, top + chartHeight + 24);
-    });
-}
-
 loadPlantTypes();
 loadGeneRules();
-loadAdminSummary();
 renderAuthState();
+
+if (isAdminUser()) {
+    loadAdminSummary();
+}

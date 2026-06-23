@@ -1,4 +1,4 @@
-* {
+*{
     box-sizing: border-box;
 }
 
@@ -98,12 +98,41 @@ h1 {
     font-size: 16px;
 }
 
-.control-panel label {
-    display: block;
-    margin-bottom: 15px;
+.section-desc {
+    margin-top: -4px;
+    margin-bottom: 18px;
+    color: #64748b;
+    line-height: 1.55;
+    font-size: 14px;
+}
+
+.admin-card,
+.growth-result-card,
+.log-card {
+    grid-column: 1 / -1;
+}
+
+/* =========================
+   Form / Button
+========================= */
+
+label {
     color: #334155;
     font-weight: 600;
     font-size: 14px;
+}
+
+.control-panel label,
+.growth-control-card label {
+    display: block;
+    margin-bottom: 15px;
+}
+
+.growth-control-card label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-weight: 800;
 }
 
 input,
@@ -137,7 +166,7 @@ button {
     font-weight: 800;
     cursor: pointer;
     box-shadow: 0 10px 22px rgba(47, 128, 237, 0.20);
-    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease, opacity 0.12s ease;
 }
 
 button:hover {
@@ -157,16 +186,231 @@ button.secondary:hover {
     box-shadow: 0 10px 22px rgba(47, 128, 237, 0.10);
 }
 
-button.danger {
-    background: var(--red-soft);
-    color: #b91c1c;
-    box-shadow: none;
-    border: 1px solid #fecdd3;
+button.danger,
+.danger {
+    background: #dc2626;
+    color: #ffffff;
 }
 
-button.danger:hover {
-    box-shadow: 0 10px 22px rgba(239, 68, 68, 0.10);
+button.danger:hover,
+.danger:hover {
+    background: #b91c1c;
 }
+
+.disabled-button,
+button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    filter: grayscale(0.35);
+    transform: none;
+    box-shadow: none;
+}
+
+button:disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* =========================
+   Auth Page
+========================= */
+
+.auth-page-body {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at top left, rgba(47, 128, 237, 0.12), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(124, 58, 237, 0.10), transparent 32%),
+        #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+}
+
+.auth-page {
+    width: 100%;
+    max-width: 520px;
+}
+
+.auth-panel {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+}
+
+.auth-logo-box {
+    margin-bottom: 20px;
+}
+
+.auth-logo {
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: #0f172a;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+}
+
+.auth-logo-box h1 {
+    margin: 0 0 8px;
+    color: #0f172a;
+    font-size: 28px;
+}
+
+.auth-logo-box p {
+    margin: 0;
+    color: #64748b;
+    line-height: 1.6;
+    font-weight: 700;
+}
+
+.auth-current-box {
+    margin-bottom: 18px;
+    padding: 14px;
+    border-radius: 16px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+.auth-current-box span {
+    display: block;
+    margin-bottom: 8px;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.auth-current-box strong,
+.session-user-box strong {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.auth-form {
+    display: grid;
+    gap: 14px;
+}
+
+.auth-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.auth-form input {
+    margin-top: 0;
+}
+
+.auth-button-row,
+.auth-link-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.auth-button-row button,
+.auth-link-row button {
+    flex: 1;
+    min-width: 120px;
+}
+
+#authMessageBox {
+    margin-top: 16px;
+    min-height: 80px;
+    white-space: pre-wrap;
+}
+
+/* =========================
+   Session Bar
+========================= */
+
+.session-bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 0 0 22px;
+    padding: 14px;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.session-user-box {
+    min-width: 230px;
+}
+
+.session-user-box span {
+    display: block;
+    margin-bottom: 6px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.session-bar button {
+    width: auto;
+    min-width: 110px;
+    margin-top: 0;
+}
+
+.auth-user-none {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+.auth-user-admin {
+    background: #7c3aed;
+    color: #ffffff;
+}
+
+.auth-user-normal {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.auth-guard-message {
+    flex: 1;
+    padding: 12px 14px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.5;
+}
+
+.auth-guard-locked {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.auth-guard-user {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+}
+
+.auth-guard-admin {
+    background: #f5f3ff;
+    color: #6d28d9;
+    border: 1px solid #ddd6fe;
+}
+
+/* =========================
+   Rule Panel
+========================= */
 
 .rule-row {
     display: grid;
@@ -182,17 +426,123 @@ button.danger:hover {
     margin-top: 0;
 }
 
+.effect-row {
+    margin-top: 12px;
+}
+
+.effect-row label {
+    display: block;
+    color: #334155;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.effect-row input {
+    margin-top: 7px;
+}
+
+.section-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 18px;
+    margin-bottom: 10px;
+}
+
+.section-header h3 {
+    margin: 0 0 4px;
+}
+
+.section-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
 .rule-list {
-    max-height: 250px;
+    max-height: 280px;
     overflow-y: auto;
 }
 
+.rule-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.rule-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+}
+
+.rule-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
 .rule-list ul {
-    padding-left: 18px;
-    margin-bottom: 0;
+    padding-left: 0;
+    margin: 0;
+    list-style: none;
     color: #334155;
     line-height: 1.7;
 }
+
+.rule-item {
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 12px;
+    margin-bottom: 10px;
+}
+
+.rule-item:last-child {
+    margin-bottom: 0;
+}
+
+.rule-text {
+    display: block;
+    color: #1e293b;
+    font-weight: 700;
+    font-family: Consolas, monospace;
+    font-size: 13px;
+}
+
+.inactive-rule {
+    color: #94a3b8;
+    text-decoration: line-through;
+}
+
+.rule-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.mini-button {
+    width: auto;
+    min-width: 74px;
+    margin-top: 0;
+    padding: 7px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    box-shadow: none;
+}
+
+.toggle-button {
+    background: #eef6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+}
+
+.delete-button {
+    background: #fff1f2;
+    color: #be123c;
+    border: 1px solid #fecdd3;
+}
+
+/* =========================
+   Plant View
+========================= */
 
 .plant-card {
     text-align: center;
@@ -231,6 +581,10 @@ button.danger:hover {
     font-weight: 700;
 }
 
+/* =========================
+   Result / Risk
+========================= */
+
 .result-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -268,210 +622,13 @@ pre {
     font-family: Consolas, monospace;
 }
 
-.log-card {
-    grid-column: 1 / -1;
-}
-
-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    overflow: hidden;
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    background: #ffffff;
-}
-
-th,
-td {
-    padding: 13px;
-    border-bottom: 1px solid var(--line);
-    text-align: left;
-}
-
-tr:last-child td {
-    border-bottom: 0;
-}
-
-th {
-    color: #475569;
-    background: #f8fafc;
-    font-size: 13px;
-}
-
-td {
-    color: #1f2937;
-}
-
-tbody tr:hover {
-    background: #f8fbff;
-}
-
-@media (max-width: 820px) {
-    .app {
-        padding: 18px;
-    }
-
-    .grid {
-        grid-template-columns: 1fr;
-    }
-
-    .rule-row {
-        grid-template-columns: 1fr;
-    }
-
-    h1 {
-        font-size: 28px;
-    }
-
-    .plant-stage {
-        height: 280px;
-    }
-
-    .rule-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 14px;
-        padding: 10px 0;
-        border-bottom: 1px solid var(--line);
-    }
-
-    .rule-item:last-child {
-        border-bottom: 0;
-    }
-
-    .rule-text {
-        flex: 1;
-        font-family: Consolas, monospace;
-        font-size: 13px;
-    }
-
-    .inactive-rule {
-        color: #94a3b8;
-        text-decoration: line-through;
-    }
-
-    .rule-actions {
-        display: flex;
-        gap: 8px;
-        flex-shrink: 0;
-    }
-
-    .mini-button {
-        width: auto;
-        margin-top: 0;
-        padding: 7px 10px;
-        border-radius: 10px;
-        font-size: 12px;
-        box-shadow: none;
-    }
-
-    .toggle-button {
-        background: #eef6ff;
-        color: #1d4ed8;
-        border: 1px solid #bfdbfe;
-    }
-
-    .delete-button {
-        background: #fff1f2;
-        color: #be123c;
-        border: 1px solid #fecdd3;
-    }
-
-    .section-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
-    margin-top: 18px;
-    margin-bottom: 10px;
-}
-
-.section-header h3 {
-    margin: 0 0 4px;
-}
-
-.section-header p {
-    margin: 0;
-    color: var(--muted);
-    font-size: 13px;
-    line-height: 1.5;
-}
-
-.rule-list {
-    max-height: 280px;
-    overflow-y: auto;
-}
-
-.rule-list::-webkit-scrollbar {
-    width: 8px;
-}
-
-.rule-list::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 999px;
-}
-
-.rule-list::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.rule-item {
-    background: #ffffff;
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: 12px;
-    margin-bottom: 10px;
-}
-
-.rule-item:last-child {
-    margin-bottom: 0;
-}
-
-.rule-text {
-    color: #1e293b;
-    font-weight: 700;
-}
-
-.inactive-rule {
-    color: #94a3b8;
-    text-decoration: line-through;
-}
-
-.rule-actions {
-    margin-top: 10px;
-}
-
-.mini-button {
-    min-width: 74px;
-}
-
 .result-card pre {
     min-height: 74px;
 }
 
-.log-card table {
-    font-size: 14px;
-}
-
-.log-card tbody tr:nth-child(even) {
-    background: #fbfdff;
-}
-
-.effect-row {
-    margin-top: 12px;
-}
-
-.effect-row label {
-    display: block;
-    color: #334155;
-    font-weight: 600;
-    font-size: 14px;
-}
-
-.effect-row input {
-    margin-top: 7px;
+#matchedRulesBox {
+    max-height: 150px;
+    overflow-y: auto;
 }
 
 .risk-badge {
@@ -511,43 +668,68 @@ tbody tr:hover {
     border: 1px solid #fecdd3;
 }
 
-#matchedRulesBox {
-    max-height: 150px;
-    overflow-y: auto;
-}
-}
-.growth-control-card label {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 14px;
-    color: #334155;
-    font-weight: 800;
-}
+/* =========================
+   Tables
+========================= */
 
-.growth-control-card select,
-.growth-control-card input {
+table {
     width: 100%;
-    padding: 11px 12px;
-    border: 1px solid #cbd5e1;
-    border-radius: 12px;
-    font-size: 15px;
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 18px;
     background: #ffffff;
 }
 
-.section-desc {
-    margin-top: -4px;
-    margin-bottom: 18px;
-    color: #64748b;
-    line-height: 1.55;
+th,
+td {
+    padding: 13px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+}
+
+tr:last-child td {
+    border-bottom: 0;
+}
+
+th {
+    color: #475569;
+    background: #f8fafc;
+    font-size: 13px;
+}
+
+td {
+    color: #1f2937;
+}
+
+tbody tr:hover {
+    background: #f8fbff;
+}
+
+.log-card table {
     font-size: 14px;
 }
+
+.log-card tbody tr:nth-child(even) {
+    background: #fbfdff;
+}
+
+/* =========================
+   Growth
+========================= */
 
 .timeline-controls {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
     margin: 14px 0 18px;
+}
+
+.timeline-controls button {
+    width: auto;
+    min-width: 120px;
+    margin-top: 0;
 }
 
 .timeline-table-wrap {
@@ -600,6 +782,10 @@ tbody tr:hover {
     border-radius: 12px;
 }
 
+/* =========================
+   Admin
+========================= */
+
 .admin-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -644,7 +830,8 @@ tbody tr:hover {
     margin-top: 10px;
 }
 
-#adminRiskChartCanvas {
+#adminRiskChartCanvas,
+#adminEnvironmentChartCanvas {
     display: block;
     max-width: 100%;
     border-radius: 12px;
@@ -657,27 +844,9 @@ tbody tr:hover {
     margin-top: 12px;
 }
 
-.admin-insight-item {
-    padding: 12px 14px;
-    border-left: 5px solid #2563eb;
-    border-radius: 12px;
-    background: #f8fafc;
-    color: #0f172a;
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 1.5;
-}
-
 .admin-insight-list p {
     color: #64748b;
     font-weight: 700;
-}
-
-.admin-insight-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 12px;
 }
 
 .admin-insight-item {
@@ -746,11 +915,6 @@ tbody tr:hover {
     color: #ffffff;
 }
 
-.admin-insight-list p {
-    color: #64748b;
-    font-weight: 700;
-}
-
 .admin-status-panel {
     margin-top: 16px;
     margin-bottom: 18px;
@@ -797,100 +961,6 @@ tbody tr:hover {
     color: #ffffff;
 }
 
-.auth-status-box {
-    margin-top: 12px;
-    margin-bottom: 16px;
-    padding: 14px;
-    border-radius: 16px;
-    border: 1px solid #e2e8f0;
-    background: #f8fafc;
-}
-
-.auth-status-box span {
-    display: block;
-    margin-bottom: 8px;
-    color: #64748b;
-    font-size: 13px;
-    font-weight: 900;
-}
-
-.auth-status-box strong {
-    display: inline-block;
-    padding: 8px 12px;
-    border-radius: 999px;
-    font-size: 14px;
-    font-weight: 900;
-}
-
-.auth-user-none {
-    background: #e2e8f0;
-    color: #334155;
-}
-
-.auth-user-admin {
-    background: #7c3aed;
-    color: #ffffff;
-}
-
-.auth-user-normal {
-    background: #2563eb;
-    color: #ffffff;
-}
-
-.button-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 12px;
-}
-
-.danger {
-    background: #dc2626;
-    color: #ffffff;
-}
-
-.danger:hover {
-    background: #b91c1c;
-}
-
-#authMessageBox {
-    margin-top: 14px;
-    min-height: 70px;
-    white-space: pre-wrap;
-}
-
-.auth-guard-message {
-    margin-bottom: 16px;
-    padding: 12px 14px;
-    border-radius: 14px;
-    font-size: 13px;
-    font-weight: 800;
-    line-height: 1.5;
-}
-
-.auth-guard-locked {
-    background: #fef2f2;
-    color: #991b1b;
-    border: 1px solid #fecaca;
-}
-
-.auth-guard-user {
-    background: #eff6ff;
-    color: #1d4ed8;
-    border: 1px solid #bfdbfe;
-}
-
-.auth-guard-admin {
-    background: #f5f3ff;
-    color: #6d28d9;
-    border: 1px solid #ddd6fe;
-}
-
-.disabled-button {
-    opacity: 0.45;
-    cursor: not-allowed;
-}
-
 .locked-card {
     opacity: 0.65;
     position: relative;
@@ -908,4 +978,66 @@ tbody tr:hover {
     font-size: 11px;
     font-weight: 900;
     letter-spacing: 0.05em;
+}
+
+/* =========================
+   Responsive
+========================= */
+
+@media (max-width: 820px) {
+    .app {
+        padding: 18px;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .session-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .session-user-box {
+        min-width: 0;
+    }
+
+    .session-bar button {
+        width: 100%;
+    }
+
+    .rule-row {
+        grid-template-columns: 1fr;
+    }
+
+    h1 {
+        font-size: 28px;
+    }
+
+    .plant-stage {
+        height: 280px;
+    }
+
+    .result-grid,
+    .admin-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .timeline-controls button {
+        width: 100%;
+    }
+
+    .auth-page-body {
+        padding: 18px;
+    }
+
+    .auth-panel {
+        padding: 22px;
+    }
+
+    .auth-button-row button,
+    .auth-link-row button {
+        width: 100%;
+        flex: auto;
+    }
 }

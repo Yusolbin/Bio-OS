@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>BIO-OS Auth</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-page-body">
+
+<main class="auth-page">
+    <section class="auth-panel">
+        <div class="auth-logo-box">
+            <span class="auth-logo">BIO-OS</span>
+            <h1>Sign in to BIO-OS</h1>
+            <p>
+                사용자 계정으로 로그인하거나 새 계정을 등록한 뒤 BIO-OS Dashboard에 진입합니다.
+            </p>
+        </div>
+
+
+        <div class="auth-form">
+            <label>
+                Username
+                <input id="authUsernameInput" type="text" placeholder="Enter username">
+            </label>
+
+            <label>
+                Password
+                <input id="authPasswordInput" type="password" placeholder="Enter password">
+            </label>
+        </div>
+
+        <div class="auth-button-row">
+            <button id="loginButton">Login</button>
+            <button id="registerButton" class="secondary">Register</button>
+            <button id="logoutButton" class="danger">Logout</button>
+        </div>
+
+        <pre id="authMessageBox">No auth action yet.</pre>
+
+        <div class="auth-link-row">
+            <button id="goDashboardButton" class="secondary">Go to Dashboard</button>
+        </div>
+    </section>
+</main>
+
+<script src="auth.js"></script>
+</body>
+</html>

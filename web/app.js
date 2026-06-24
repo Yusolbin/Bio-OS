@@ -109,6 +109,8 @@ const logoutButton = document.getElementById("logoutButton");
 const authGuardMessage = document.getElementById("authGuardMessage");
 const adminDashboardCard = document.getElementById("adminDashboardCard");
 
+const engineSourceText = document.getElementById("engineSourceText");
+
 runButton.addEventListener("click", () => {
     runSimulationFromInput();
 });
@@ -276,6 +278,10 @@ function renderResult(result) {
     energyValue.textContent = Number(result.totalEnergy || 0).toFixed(1);
     energyDeltaValue.textContent = formatSignedNumber(result.energyDelta || 0);
     visualStateValue.textContent = visualKey;
+
+    if (engineSourceText) {
+        engineSourceText.textContent = result.engineSource || "-";
+    }
 
     const riskLevel = result.riskLevel || "LOW";
     riskLevelValue.textContent = riskLevel;

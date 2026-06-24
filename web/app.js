@@ -182,6 +182,7 @@ async function clearSimulationLogs() {
             `http://localhost:8080/api/simulations/logs?userId=${currentUser.userId}`,
             {
                 method: "DELETE",
+                headers: buildAuthHeaders(),
             }
         );
 
@@ -230,9 +231,7 @@ async function runSimulationFromInput() {
     try {
         const response = await fetch("http://localhost:8080/api/simulations/run", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
+            headers: buildJsonHeaders(),
             body: JSON.stringify({
                 userId: currentUser.userId,
                 water: water,
@@ -335,7 +334,10 @@ async function loadSimulationLogs() {
 
     try {
         const response = await fetch(
-            `http://localhost:8080/api/simulations/logs?userId=${currentUser.userId}`
+            `http://localhost:8080/api/simulations/logs?userId=${currentUser.userId}`,
+            {
+                headers: buildAuthHeaders(),
+            }
         );
 
         if (!response.ok) {
@@ -400,9 +402,7 @@ async function createGeneRule() {
     try {
         const response = await fetch("http://localhost:8080/api/rules", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
+            headers: buildJsonHeaders(),
             body: JSON.stringify({
                 fieldName: fieldName,
                 operator: operator,
@@ -426,7 +426,9 @@ async function createGeneRule() {
 
 async function loadGeneRules() {
     try {
-        const response = await fetch("http://localhost:8080/api/rules");
+        const response = await fetch("http://localhost:8080/api/rules", {
+            headers: buildAuthHeaders(),
+        });
 
         if (!response.ok) {
             throw new Error("Failed to load gene rules: " + response.status);
@@ -507,6 +509,7 @@ async function toggleGeneRule(ruleId) {
     try {
         const response = await fetch(`http://localhost:8080/api/rules/${ruleId}/toggle`, {
             method: "PATCH",
+            headers: buildAuthHeaders(),
         });
 
         if (!response.ok) {
@@ -537,6 +540,7 @@ async function deleteGeneRule(ruleId) {
     try {
         const response = await fetch(`http://localhost:8080/api/rules/${ruleId}`, {
             method: "DELETE",
+            headers: buildAuthHeaders(),
         });
 
         if (!response.ok) {
@@ -553,7 +557,9 @@ async function deleteGeneRule(ruleId) {
 
 async function loadPlantTypes() {
     try {
-        const response = await fetch("http://localhost:8080/api/plants");
+        const response = await fetch("http://localhost:8080/api/plants", {
+            headers: buildAuthHeaders(),
+        });
 
         if (!response.ok) {
             throw new Error("Failed to load plant types: " + response.status);
@@ -603,9 +609,7 @@ async function runGrowthSimulation() {
     try {
         const response = await fetch("http://localhost:8080/api/growth/simulate", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
+            headers: buildJsonHeaders(),
             body: JSON.stringify({
                 userId: currentUser.userId,
                 plantTypeId: plantTypeId,
@@ -640,7 +644,10 @@ async function loadGrowthSimulations() {
 
     try {
         const response = await fetch(
-            `http://localhost:8080/api/growth/simulations?userId=${currentUser.userId}`
+            `http://localhost:8080/api/growth/simulations?userId=${currentUser.userId}`,
+            {
+                headers: buildAuthHeaders(),
+            }
         );
 
         if (!response.ok) {
@@ -694,7 +701,9 @@ function renderGrowthSimulationHistory(simulations) {
 
 async function loadGrowthSimulationDetail(simulationId) {
     try {
-        const response = await fetch(`http://localhost:8080/api/growth/simulations/${simulationId}`);
+        const response = await fetch(`http://localhost:8080/api/growth/simulations/${simulationId}`, {
+            headers: buildAuthHeaders(),
+        });
 
         if (!response.ok) {
             throw new Error("Failed to load growth simulation detail: " + response.status);
@@ -866,7 +875,9 @@ async function loadAdminSummary() {
     }
 
     try {
-        const response = await fetch("http://localhost:8080/api/admin/summary");
+        const response = await fetch("http://localhost:8080/api/admin/summary", {
+            headers: buildAuthHeaders(),
+        });
 
         if (!response.ok) {
             throw new Error("Failed to load admin summary: " + response.status);
@@ -1541,6 +1552,7 @@ function getRiskClass(riskLevel) {
 
 function logoutUser() {
     localStorage.removeItem("bioOsCurrentUser");
+    localStorage.removeItem("bioOsJwtToken");
     currentUser = null;
     window.location.href = "auth.html";
 }
@@ -1556,8 +1568,43 @@ function loadCurrentUser() {
         return JSON.parse(savedUser);
     } catch (error) {
         localStorage.removeItem("bioOsCurrentUser");
+        localStorage.removeItem("bioOsJwtToken");
         return null;
     }
+}
+
+function getAuthToken() {
+    if (currentUser && currentUser.token) {
+        return currentUser.token;
+    }
+
+    return localStorage.getItem("bioOsJwtToken") || "";
+}
+
+function buildAuthHeaders() {
+    const token = getAuthToken();
+
+    if (!token) {
+        return {};
+    }
+
+    return {
+        Authorization: `Bearer ${token}`,
+    };
+}
+
+function buildJsonHeaders() {
+    const headers = {
+        "Content-Type": "application/json",
+    };
+
+    const token = getAuthToken();
+
+    if (token) {
+        headers.Authorization = `Bearer ${token}`;
+    }
+
+    return headers;
 }
 
 function renderAuthState() {

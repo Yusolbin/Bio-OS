@@ -15,13 +15,16 @@ public class AuthService {
 
     private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     public AuthService(
             UserAccountRepository userAccountRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService
     ) {
         this.userAccountRepository = userAccountRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     @Transactional
@@ -48,12 +51,15 @@ public class AuthService {
         UserAccount userAccount = new UserAccount(username, passwordHash, role);
         UserAccount savedUser = userAccountRepository.save(userAccount);
 
+        String token = jwtService.generateToken(savedUser);
+
         return new AuthResponse(
                 true,
                 "Register successful.",
                 savedUser.getId(),
                 savedUser.getUsername(),
-                savedUser.getRole()
+                savedUser.getRole(),
+                token
         );
     }
 
@@ -78,12 +84,15 @@ public class AuthService {
             return new AuthResponse(false, "Invalid username or password.", null, username, null);
         }
 
+        String token = jwtService.generateToken(userAccount);
+
         return new AuthResponse(
                 true,
                 "Login successful.",
                 userAccount.getId(),
                 userAccount.getUsername(),
-                userAccount.getRole()
+                userAccount.getRole(),
+                token
         );
     }
 

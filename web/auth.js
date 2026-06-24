@@ -114,6 +114,8 @@ async function loginUser() {
 
 function logoutUser() {
     localStorage.removeItem("bioOsCurrentUser");
+    localStorage.removeItem("bioOsJwtToken");
+
     currentUser = null;
 
     authPasswordInput.value = "";
@@ -136,9 +138,14 @@ function saveCurrentUser(user) {
         userId: user.userId,
         username: user.username,
         role: user.role,
+        token: user.token,
     };
 
     localStorage.setItem("bioOsCurrentUser", JSON.stringify(currentUser));
+
+    if (user.token) {
+        localStorage.setItem("bioOsJwtToken", user.token);
+    }
 }
 
 function loadCurrentUser() {
@@ -152,6 +159,7 @@ function loadCurrentUser() {
         return JSON.parse(savedUser);
     } catch (error) {
         localStorage.removeItem("bioOsCurrentUser");
+        localStorage.removeItem("bioOsJwtToken");
         return null;
     }
 }
@@ -162,8 +170,10 @@ function renderAuthState() {
         return;
     }
 
+    const tokenStatus = currentUser.token ? "JWT issued." : "JWT missing.";
+
     authMessageBox.textContent =
-        `${currentUser.role} account is signed in.`;
+        `${currentUser.role} account is signed in. ${tokenStatus}`;
 }
 
 renderAuthState();

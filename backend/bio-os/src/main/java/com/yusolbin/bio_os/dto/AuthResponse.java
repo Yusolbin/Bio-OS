@@ -7,6 +7,7 @@ public class AuthResponse {
     private Long userId;
     private String username;
     private String role;
+    private String token;
 
     public AuthResponse(
             boolean success,
@@ -20,6 +21,23 @@ public class AuthResponse {
         this.userId = userId;
         this.username = username;
         this.role = role;
+        this.token = null;
+    }
+
+    public AuthResponse(
+            boolean success,
+            String message,
+            Long userId,
+            String username,
+            String role,
+            String token
+    ) {
+        this.success = success;
+        this.message = message;
+        this.userId = userId;
+        this.username = username;
+        this.role = role;
+        this.token = token;
     }
 
     public boolean isSuccess() {
@@ -40,5 +58,9 @@ public class AuthResponse {
 
     public String getRole() {
         return role;
+    }
+
+    public String getToken() {
+        return token;
     }
 }

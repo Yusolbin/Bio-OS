@@ -4,21 +4,24 @@ import com.yusolbin.bio_os.dto.AuthRequest;
 import com.yusolbin.bio_os.dto.AuthResponse;
 import com.yusolbin.bio_os.model.UserAccount;
 import com.yusolbin.bio_os.repository.UserAccountRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
 @Service
 public class AuthService {
 
     private final UserAccountRepository userAccountRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthService(UserAccountRepository userAccountRepository) {
+    public AuthService(
+            UserAccountRepository userAccountRepository,
+            PasswordEncoder passwordEncoder
+    ) {
         this.userAccountRepository = userAccountRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
@@ -38,7 +41,7 @@ public class AuthService {
             return new AuthResponse(false, "Username already exists.", null, username, null);
         }
 
-        String passwordHash = hashPassword(username, password);
+        String passwordHash = passwordEncoder.encode(password);
 
         String role = userAccountRepository.count() == 0 ? "ADMIN" : "USER";
 
@@ -71,9 +74,7 @@ public class AuthService {
 
         UserAccount userAccount = optionalUser.get();
 
-        String passwordHash = hashPassword(username, password);
-
-        if (!userAccount.getPasswordHash().equals(passwordHash)) {
+        if (!passwordEncoder.matches(password, userAccount.getPasswordHash())) {
             return new AuthResponse(false, "Invalid username or password.", null, username, null);
         }
 
@@ -92,25 +93,5 @@ public class AuthService {
         }
 
         return username.trim().toLowerCase();
-    }
-
-    private String hashPassword(String username, String password) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            String rawText = username + ":" + password;
-
-            byte[] hashBytes = digest.digest(rawText.getBytes(StandardCharsets.UTF_8));
-
-            StringBuilder builder = new StringBuilder();
-
-            for (byte hashByte : hashBytes) {
-                builder.append(String.format("%02x", hashByte));
-            }
-
-            return builder.toString();
-
-        } catch (NoSuchAlgorithmException error) {
-            throw new IllegalStateException("SHA-256 algorithm is not available.", error);
-        }
     }
 }

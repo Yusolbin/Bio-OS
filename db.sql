@@ -13,3 +13,9 @@ USE bio_os;
 SELECT id, user_account_id, water, light, temperature, humidity, total_energy
 FROM simulation_log
 ORDER BY id DESC;
+
+SELECT * FROM password_hash;
+
+SELECT id, username, password_hash, role, created_at
+FROM user_accounts
+ORDER BY id DESC;

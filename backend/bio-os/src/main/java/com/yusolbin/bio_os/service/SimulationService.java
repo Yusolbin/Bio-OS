@@ -156,6 +156,7 @@ public class SimulationService {
             matchedRulesText,
             riskLevel,
             recommendation
+            
     );
 
     if (request.getUserId() != null) {
@@ -179,7 +180,8 @@ public class SimulationService {
             energyDelta,
             matchedRules,
             riskLevel,
-            recommendation
+            recommendation,
+            cppResult.getEngineSource()
     );
 }
 
@@ -245,7 +247,8 @@ private SimulationResponse runJavaFallbackSimulation(
             energyDelta,
             matchedRules,
             riskLevel,
-            recommendation
+            recommendation,
+            "JAVA_FALLBACK"
     );
 }
 

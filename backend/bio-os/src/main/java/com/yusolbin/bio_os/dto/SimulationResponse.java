@@ -3,6 +3,7 @@ package com.yusolbin.bio_os.dto;
 import java.util.List;
 
 public class SimulationResponse {
+
     private Long logId;
     private int tick;
     private double water;
@@ -17,8 +18,10 @@ public class SimulationResponse {
     private List<String> matchedRules;
     private String riskLevel;
     private String recommendation;
+    private String engineSource;
 
-    public SimulationResponse() {}
+    public SimulationResponse() {
+    }
 
     public SimulationResponse(
             Long logId,
@@ -50,6 +53,41 @@ public class SimulationResponse {
         this.matchedRules = matchedRules;
         this.riskLevel = riskLevel;
         this.recommendation = recommendation;
+        this.engineSource = "JAVA_RULE_ENGINE";
+    }
+
+    public SimulationResponse(
+            Long logId,
+            int tick,
+            double water,
+            double light,
+            double temperature,
+            double humidity,
+            double totalEnergy,
+            String lastAction,
+            String visualState,
+            List<String> activeStates,
+            double energyDelta,
+            List<String> matchedRules,
+            String riskLevel,
+            String recommendation,
+            String engineSource
+    ) {
+        this.logId = logId;
+        this.tick = tick;
+        this.water = water;
+        this.light = light;
+        this.temperature = temperature;
+        this.humidity = humidity;
+        this.totalEnergy = totalEnergy;
+        this.lastAction = lastAction;
+        this.visualState = visualState;
+        this.activeStates = activeStates;
+        this.energyDelta = energyDelta;
+        this.matchedRules = matchedRules;
+        this.riskLevel = riskLevel;
+        this.recommendation = recommendation;
+        this.engineSource = engineSource;
     }
 
     public Long getLogId() {
@@ -106,5 +144,9 @@ public class SimulationResponse {
 
     public String getRecommendation() {
         return recommendation;
+    }
+
+    public String getEngineSource() {
+        return engineSource;
     }
 }

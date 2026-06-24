@@ -1,8 +1,11 @@
 package com.yusolbin.bio_os.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import com.yusolbin.bio_os.dto.SimulationLogResponse;
 import com.yusolbin.bio_os.dto.SimulationRequest;
 import com.yusolbin.bio_os.dto.SimulationResponse;
+import com.yusolbin.bio_os.dto.CppEngineResult;
 import com.yusolbin.bio_os.model.GeneRule;
 import com.yusolbin.bio_os.model.SimulationLog;
 import com.yusolbin.bio_os.repository.GeneRuleRepository;
@@ -20,17 +23,20 @@ public class SimulationService {
     private final SimulationLogRepository simulationLogRepository;
     private final GeneRuleRepository geneRuleRepository;
     private final UserAccountRepository userAccountRepository;
+    private final CppEngineBridgeService cppEngineBridgeService;
 
     private int tick = 0;
 
     public SimulationService(
             SimulationLogRepository simulationLogRepository,
             GeneRuleRepository geneRuleRepository,
-            UserAccountRepository userAccountRepository
+            UserAccountRepository userAccountRepository,
+            CppEngineBridgeService cppEngineBridgeService
     ) {
         this.simulationLogRepository = simulationLogRepository;
         this.geneRuleRepository = geneRuleRepository;
         this.userAccountRepository = userAccountRepository;
+        this.cppEngineBridgeService = cppEngineBridgeService;
     }
 
     private static class RuleEvaluationResult {
@@ -51,71 +57,39 @@ public class SimulationService {
 
     @Transactional
     public SimulationResponse runSimulation(SimulationRequest request) {
-        tick++;
+    tick++;
 
-        double water = request.getWater();
-        double light = request.getLight();
-        double temperature = request.getTemperature();
-        double humidity = request.getHumidity();
+    double water = request.getWater();
+    double light = request.getLight();
+    double temperature = request.getTemperature();
+    double humidity = request.getHumidity();
 
-        RuleEvaluationResult ruleResult = evaluateRules(water, light, temperature);
+    CppEngineResult cppResult = cppEngineBridgeService.runEngine(
+            water,
+            light,
+            temperature,
+            humidity
+    );
 
-        List<String> activeStates = ruleResult.activeStates;
-        List<String> matchedRules = ruleResult.matchedRules;
-        double energyDelta = ruleResult.energyDelta;
-
-        double totalEnergy = calculateTotalEnergy(water, light, temperature, activeStates);
-        totalEnergy += energyDelta;
-        totalEnergy = clampEnergy(totalEnergy);
-
-        String lastAction = decideLastAction(activeStates, totalEnergy);
-        String visualState = decideVisualState(activeStates, lastAction, totalEnergy);
-        String riskLevel = decideRiskLevel(totalEnergy, activeStates);
-        String recommendation = makeRecommendation(riskLevel, activeStates, lastAction);
-
-        String activeStatesText = String.join(",", activeStates);
-        String matchedRulesText = String.join("|", matchedRules);
-
-        SimulationLog log = new SimulationLog(
-                tick,
+    if (cppResult.isSuccess() && cppResult.getSnapshot() != null) {
+        return saveCppSimulationResult(
+                request,
+                cppResult,
                 water,
                 light,
                 temperature,
-                humidity,
-                totalEnergy,
-                lastAction,
-                visualState,
-                activeStatesText,
-                energyDelta,
-                matchedRulesText,
-                riskLevel,
-                recommendation
-        );
-
-        if (request.getUserId() != null) {
-            userAccountRepository.findById(request.getUserId())
-                    .ifPresent(log::setUserAccount);
-        }
-
-        SimulationLog savedLog = simulationLogRepository.save(log);
-
-        return new SimulationResponse(
-                savedLog.getId(),
-                tick,
-                water,
-                light,
-                temperature,
-                humidity,
-                totalEnergy,
-                lastAction,
-                visualState,
-                activeStates,
-                energyDelta,
-                matchedRules,
-                riskLevel,
-                recommendation
+                humidity
         );
     }
+
+    return runJavaFallbackSimulation(
+            request,
+            water,
+            light,
+            temperature,
+            humidity
+    );
+}
 
     @Transactional(readOnly = true)
     public List<SimulationLogResponse> getSimulationLogs(Long userId) {
@@ -141,6 +115,180 @@ public class SimulationService {
 
         simulationLogRepository.deleteByUserAccount_Id(userId);
     }
+
+    private SimulationResponse saveCppSimulationResult(
+        SimulationRequest request,
+        CppEngineResult cppResult,
+        double water,
+        double light,
+        double temperature,
+        double humidity
+) {
+    JsonNode snapshot = cppResult.getSnapshot();
+    JsonNode summary = snapshot.path("summary");
+
+    double totalEnergy = summary.path("totalEnergy").asDouble(0.0);
+    String lastAction = summary.path("lastAction").asText("Stable");
+
+    List<String> activeStates = extractActiveStatesFromCppSnapshot(snapshot);
+    List<String> matchedRules = extractLogMessagesFromCppSnapshot(snapshot);
+
+    double energyDelta = 0.0;
+
+    String visualState = decideVisualState(activeStates, lastAction, totalEnergy);
+    String riskLevel = decideRiskLevel(totalEnergy, activeStates);
+    String recommendation = makeRecommendation(riskLevel, activeStates, lastAction);
+
+    String activeStatesText = String.join(",", activeStates);
+    String matchedRulesText = String.join("|", matchedRules);
+
+    SimulationLog log = new SimulationLog(
+            tick,
+            water,
+            light,
+            temperature,
+            humidity,
+            totalEnergy,
+            lastAction,
+            visualState,
+            activeStatesText,
+            energyDelta,
+            matchedRulesText,
+            riskLevel,
+            recommendation
+    );
+
+    if (request.getUserId() != null) {
+        userAccountRepository.findById(request.getUserId())
+                .ifPresent(log::setUserAccount);
+    }
+
+    SimulationLog savedLog = simulationLogRepository.save(log);
+
+    return new SimulationResponse(
+            savedLog.getId(),
+            tick,
+            water,
+            light,
+            temperature,
+            humidity,
+            totalEnergy,
+            lastAction,
+            visualState,
+            activeStates,
+            energyDelta,
+            matchedRules,
+            riskLevel,
+            recommendation
+    );
+}
+
+private SimulationResponse runJavaFallbackSimulation(
+        SimulationRequest request,
+        double water,
+        double light,
+        double temperature,
+        double humidity
+) {
+    RuleEvaluationResult ruleResult = evaluateRules(water, light, temperature);
+
+    List<String> activeStates = ruleResult.activeStates;
+    List<String> matchedRules = ruleResult.matchedRules;
+    double energyDelta = ruleResult.energyDelta;
+
+    double totalEnergy = calculateTotalEnergy(water, light, temperature, activeStates);
+    totalEnergy += energyDelta;
+    totalEnergy = clampEnergy(totalEnergy);
+
+    String lastAction = decideLastAction(activeStates, totalEnergy);
+    String visualState = decideVisualState(activeStates, lastAction, totalEnergy);
+    String riskLevel = decideRiskLevel(totalEnergy, activeStates);
+    String recommendation = makeRecommendation(riskLevel, activeStates, lastAction);
+
+    String activeStatesText = String.join(",", activeStates);
+    String matchedRulesText = String.join("|", matchedRules);
+
+    SimulationLog log = new SimulationLog(
+            tick,
+            water,
+            light,
+            temperature,
+            humidity,
+            totalEnergy,
+            lastAction,
+            visualState,
+            activeStatesText,
+            energyDelta,
+            matchedRulesText,
+            riskLevel,
+            recommendation
+    );
+
+    if (request.getUserId() != null) {
+        userAccountRepository.findById(request.getUserId())
+                .ifPresent(log::setUserAccount);
+    }
+
+    SimulationLog savedLog = simulationLogRepository.save(log);
+
+    return new SimulationResponse(
+            savedLog.getId(),
+            tick,
+            water,
+            light,
+            temperature,
+            humidity,
+            totalEnergy,
+            lastAction,
+            visualState,
+            activeStates,
+            energyDelta,
+            matchedRules,
+            riskLevel,
+            recommendation
+    );
+}
+
+private List<String> extractActiveStatesFromCppSnapshot(JsonNode snapshot) {
+    List<String> activeStates = new ArrayList<>();
+
+    JsonNode statesNode = snapshot.path("states");
+
+    if (statesNode.isObject()) {
+        statesNode.fieldNames().forEachRemaining(stateName -> {
+            JsonNode stateValue = statesNode.path(stateName);
+
+            if (stateValue.asBoolean(false)) {
+                activeStates.add(stateName);
+            }
+        });
+    }
+
+    return activeStates;
+}
+
+private List<String> extractLogMessagesFromCppSnapshot(JsonNode snapshot) {
+    List<String> messages = new ArrayList<>();
+
+    JsonNode logsNode = snapshot.path("logs");
+
+    if (logsNode.isArray()) {
+        for (JsonNode logNode : logsNode) {
+            String type = logNode.path("type").asText("");
+            String message = logNode.path("message").asText("");
+
+            if (!message.isBlank()) {
+                if (type.isBlank()) {
+                    messages.add(message);
+                } else {
+                    messages.add(type + ": " + message);
+                }
+            }
+        }
+    }
+
+    return messages;
+}
 
     private RuleEvaluationResult evaluateRules(double water, double light, double temperature) {
         List<String> activeStates = new ArrayList<>();

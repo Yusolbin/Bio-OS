@@ -46,11 +46,7 @@ public class SecurityConfig {
                         .requestMatchers("/v3/api-docs/**").permitAll()
 
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-
-                        .requestMatchers(HttpMethod.POST, "/api/rules/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/api/rules/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/rules/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/rules/**").authenticated()
+                        .requestMatchers("/api/rules/**").hasRole("ADMIN")
 
                         .requestMatchers("/api/simulations/**").authenticated()
                         .requestMatchers("/api/growth/**").authenticated()

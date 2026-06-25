@@ -29,3 +29,4 @@ Release/
 # OS
 .DS_Store
 Thumbs.db**/application.properties 
+backend/bio-os/data/

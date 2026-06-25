@@ -1,6 +1,8 @@
 let currentGrowthTimeline = [];
 let currentGrowthDayIndex = 0;
 let currentGrowthSimulationId = null;
+let latestSimulationResult = null;
+let latestGrowthResult = null;
 let timelineTimer = null;
 let currentUser = loadCurrentUser();
 
@@ -114,6 +116,17 @@ const adminDashboardCard = document.getElementById("adminDashboardCard");
 
 const engineSourceText = document.getElementById("engineSourceText");
 
+const runAiPredictionButton = document.getElementById("runAiPredictionButton");
+const aiPredictionLabel = document.getElementById("aiPredictionLabel");
+const aiSurvivalProbability = document.getElementById("aiSurvivalProbability");
+const aiGrowthPotential = document.getElementById("aiGrowthPotential");
+const aiRiskScore = document.getElementById("aiRiskScore");
+const aiConfidenceScore = document.getElementById("aiConfidenceScore");
+const aiEngineSource = document.getElementById("aiEngineSource");
+const aiRecommendedActionBox = document.getElementById("aiRecommendedActionBox");
+const aiReasonBox = document.getElementById("aiReasonBox");
+const aiRiskFactorsBox = document.getElementById("aiRiskFactorsBox");
+
 runButton.addEventListener("click", () => {
     runSimulationFromInput();
 });
@@ -167,6 +180,12 @@ loadAdminSummaryButton.addEventListener("click", async () => {
     await loadAdminSummary();
     await loadAdminUsers();
 });
+
+if (runAiPredictionButton) {
+    runAiPredictionButton.addEventListener("click", () => {
+        runAiPrediction();
+    });
+}
 
 logoutButton.addEventListener("click", () => {
     logoutUser();
@@ -268,6 +287,8 @@ async function runSimulationFromInput() {
 }
 
 function renderResult(result) {
+    latestSimulationResult = result;
+
     const visualKey = result.visualState || result.visual || "stable";
     const imagePath = plantImages[visualKey] || plantImages.stable;
 
@@ -808,6 +829,8 @@ async function exportCurrentGrowthSimulationCsv() {
 }
 
 function renderGrowthResult(result) {
+    latestGrowthResult = result;
+
     pauseGrowthTimeline();
 
     currentGrowthTimeline = result.timeline || [];
@@ -957,6 +980,148 @@ function resetGrowthTimeline() {
     }
 
     renderGrowthDay(0);
+}
+
+async function runAiPrediction() {
+    if (!currentUser) {
+        alert("AI Prediction은 로그인 후 사용할 수 있습니다.");
+        showDashboardMessage("Login required for AI Prediction.");
+        return;
+    }
+
+    try {
+        const requestBody = buildAiPredictionRequest();
+
+        const response = await fetch("http://localhost:8080/api/ai/predict", {
+            method: "POST",
+            headers: buildJsonHeaders(),
+            body: JSON.stringify(requestBody),
+        });
+
+        if (handleAuthError(response)) {
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error("AI Prediction request failed: " + response.status);
+        }
+
+        const prediction = await response.json();
+
+        renderAiPrediction(prediction);
+
+    } catch (error) {
+        console.error(error);
+        alert("AI Prediction 실행에 실패했습니다. Spring Boot 서버가 켜져 있는지 확인해 주세요.");
+    }
+}
+
+function buildAiPredictionRequest() {
+    if (latestGrowthResult) {
+        return {
+            water: Number(latestGrowthResult.initialWater || waterInput.value || 0),
+            light: Number(latestGrowthResult.initialLight || lightInput.value || 0),
+            temperature: Number(latestGrowthResult.initialTemperature || temperatureInput.value || 0),
+            humidity: Number(latestGrowthResult.initialHumidity || humidityInput.value || 0),
+            totalEnergy: extractFinalTimelineEnergy(latestGrowthResult),
+            growthScore: Number(latestGrowthResult.finalGrowthScore || 0),
+            riskLevel: latestGrowthResult.finalRiskLevel || "LOW",
+            visualState: latestGrowthResult.finalVisualState || "stable",
+            activeStates: extractFinalTimelineStates(latestGrowthResult),
+        };
+    }
+
+    if (latestSimulationResult) {
+        return {
+            water: Number(latestSimulationResult.water || waterInput.value || 0),
+            light: Number(latestSimulationResult.light || lightInput.value || 0),
+            temperature: Number(latestSimulationResult.temperature || temperatureInput.value || 0),
+            humidity: Number(latestSimulationResult.humidity || humidityInput.value || 0),
+            totalEnergy: Number(latestSimulationResult.totalEnergy || 0),
+            growthScore: 0,
+            riskLevel: latestSimulationResult.riskLevel || "LOW",
+            visualState: latestSimulationResult.visualState || "stable",
+            activeStates: latestSimulationResult.activeStates || [],
+        };
+    }
+
+    return {
+        water: Number(waterInput.value || 0),
+        light: Number(lightInput.value || 0),
+        temperature: Number(temperatureInput.value || 0),
+        humidity: Number(humidityInput.value || 0),
+        totalEnergy: 0,
+        growthScore: 0,
+        riskLevel: "LOW",
+        visualState: "stable",
+        activeStates: [],
+    };
+}
+
+function extractFinalTimelineEnergy(growthResult) {
+    const timeline = growthResult.timeline || [];
+
+    if (timeline.length === 0) {
+        return 0;
+    }
+
+    const lastDay = timeline[timeline.length - 1];
+
+    return Number(lastDay.totalEnergy || 0);
+}
+
+function extractFinalTimelineStates(growthResult) {
+    const timeline = growthResult.timeline || [];
+
+    if (timeline.length === 0) {
+        return [];
+    }
+
+    const lastDay = timeline[timeline.length - 1];
+
+    return lastDay.activeStates || [];
+}
+
+function renderAiPrediction(prediction) {
+    if (aiPredictionLabel) {
+        aiPredictionLabel.textContent = prediction.predictionLabel || "-";
+    }
+
+    if (aiSurvivalProbability) {
+        aiSurvivalProbability.textContent = `${Number(prediction.survivalProbability || 0).toFixed(1)}%`;
+    }
+
+    if (aiGrowthPotential) {
+        aiGrowthPotential.textContent = `${Number(prediction.growthPotential || 0).toFixed(1)}%`;
+    }
+
+    if (aiRiskScore) {
+        aiRiskScore.textContent = `${Number(prediction.riskScore || 0).toFixed(1)} / 100`;
+    }
+
+    if (aiConfidenceScore) {
+        aiConfidenceScore.textContent = `${Number(prediction.confidenceScore || 0).toFixed(1)}%`;
+    }
+
+    if (aiEngineSource) {
+        aiEngineSource.textContent = prediction.engineSource || "-";
+    }
+
+    if (aiRecommendedActionBox) {
+        aiRecommendedActionBox.textContent = prediction.recommendedAction || "No recommended action.";
+    }
+
+    if (aiReasonBox) {
+        aiReasonBox.textContent = prediction.reason || "No reason generated.";
+    }
+
+    if (aiRiskFactorsBox) {
+        const riskFactors = prediction.riskFactors || [];
+
+        aiRiskFactorsBox.textContent = riskFactors.length === 0
+            ? "No risk factors detected."
+            : riskFactors.map((factor) => `- ${factor}`).join("\n");
+    }
 }
 
 async function loadAdminSummary() {
@@ -1888,6 +2053,7 @@ function applyAuthGuard() {
     setButtonEnabled(runButton, loggedIn);
     setButtonEnabled(randomButton, loggedIn);
     setButtonEnabled(loadLogsButton, loggedIn);
+    setButtonEnabled(runAiPredictionButton, loggedIn);
     setButtonEnabled(resetButton, loggedIn);
 
     setButtonEnabled(runGrowthButton, loggedIn);

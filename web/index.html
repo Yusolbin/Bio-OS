@@ -82,6 +82,52 @@
             <button id="loadGrowthSimulationsButton" class="secondary">Load Growth Simulations</button>
         </section>
 
+        <section class="card">
+            <div class="card-header">
+                <div>
+                    <h2>AI Prediction</h2>
+                    <p>Predict survival probability, growth potential, and risk score from current BIO-OS data.</p>
+                </div>
+                <button id="runAiPredictionButton" class="primary">Run AI Prediction</button>
+            </div>
+
+            <div class="metric-grid">
+                <div class="metric-row">
+                    <span>Prediction Label</span>
+                    <strong id="aiPredictionLabel">-</strong>
+                </div>
+                <div class="metric-row">
+                    <span>Survival Probability</span>
+                    <strong id="aiSurvivalProbability">-</strong>
+                </div>
+                <div class="metric-row">
+                    <span>Growth Potential</span>
+                    <strong id="aiGrowthPotential">-</strong>
+                </div>
+                <div class="metric-row">
+                    <span>Risk Score</span>
+                    <strong id="aiRiskScore">-</strong>
+                </div>
+                <div class="metric-row">
+                    <span>Confidence Score</span>
+                    <strong id="aiConfidenceScore">-</strong>
+                </div>
+                <div class="metric-row">
+                    <span>Engine Source</span>
+                    <strong id="aiEngineSource">-</strong>
+                </div>
+            </div>
+
+            <h3>Recommended Action</h3>
+            <pre id="aiRecommendedActionBox">No AI prediction yet.</pre>
+
+            <h3>Prediction Reason</h3>
+            <pre id="aiReasonBox">No reason generated yet.</pre>
+
+            <h3>Risk Factors</h3>
+            <pre id="aiRiskFactorsBox">No risk factors detected.</pre>
+        </section>
+
         <section id="adminDashboardCard" class="card admin-card">
             <h2>Admin Dashboard</h2>
             <p class="section-desc">

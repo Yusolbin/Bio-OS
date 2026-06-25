@@ -2,6 +2,7 @@ package com.yusolbin.bio_os.controller;
 
 import com.yusolbin.bio_os.dto.AdminDashboardResponse;
 import com.yusolbin.bio_os.dto.AdminUserResponse;
+import com.yusolbin.bio_os.dto.AdminUserRoleUpdateRequest;
 import com.yusolbin.bio_os.security.CurrentUserService;
 import com.yusolbin.bio_os.service.AdminDashboardService;
 import com.yusolbin.bio_os.service.AdminUserService;
@@ -42,6 +43,22 @@ public class AdminDashboardController {
         requireAdmin();
 
         return adminUserService.getUsers();
+    }
+
+    @PatchMapping("/users/{userId}/role")
+    public AdminUserResponse updateUserRole(
+            @PathVariable Long userId,
+            @RequestBody AdminUserRoleUpdateRequest request
+    ) {
+        requireAdmin();
+
+        Long currentUserId = currentUserService.getCurrentUserId();
+
+        return adminUserService.updateUserRole(
+                userId,
+                request.getRole(),
+                currentUserId
+        );
     }
 
     private void requireAdmin() {

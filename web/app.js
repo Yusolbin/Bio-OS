@@ -430,10 +430,34 @@ async function createGeneRule() {
 }
 
 async function loadGeneRules() {
+    if (!isAdminUser()) {
+        if (ruleList) {
+            ruleList.innerHTML = "";
+
+            const lockedItem = document.createElement("li");
+            lockedItem.textContent = "ADMIN only: Gene Rule list is locked.";
+            ruleList.appendChild(lockedItem);
+        }
+
+        return;
+    }
+
     try {
         const response = await fetch("http://localhost:8080/api/rules", {
             headers: buildAuthHeaders(),
         });
+
+        if (response.status === 403) {
+            if (ruleList) {
+                ruleList.innerHTML = "";
+
+                const lockedItem = document.createElement("li");
+                lockedItem.textContent = "ADMIN only: Gene Rule list is locked.";
+                ruleList.appendChild(lockedItem);
+            }
+
+            return;
+        }
 
         if (!response.ok) {
             throw new Error("Failed to load gene rules: " + response.status);
@@ -1760,9 +1784,15 @@ drawAdminEnvironmentChart({
 renderAdminInsights([]);
 
 loadPlantTypes();
-loadGeneRules();
 renderAuthState();
 
 if (isAdminUser()) {
+    loadGeneRules();
     loadAdminSummary();
+} else if (ruleList) {
+    ruleList.innerHTML = "";
+
+    const lockedItem = document.createElement("li");
+    lockedItem.textContent = "ADMIN only: Gene Rule list is locked.";
+    ruleList.appendChild(lockedItem);
 }

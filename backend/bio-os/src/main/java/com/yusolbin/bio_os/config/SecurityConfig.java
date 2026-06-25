@@ -52,6 +52,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/growth/**").authenticated()
                         .requestMatchers("/api/plants/**").authenticated()
                         .requestMatchers("/api/engine/cpp/**").authenticated()
+                        .requestMatchers("/api/ai").authenticated()
 
                         .anyRequest().authenticated()
                 )

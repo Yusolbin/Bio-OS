@@ -14,6 +14,9 @@ import com.yusolbin.bio_os.repository.UserAccountRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -177,9 +180,13 @@ public class GrowthSimulationService {
     }
 
     @Transactional(readOnly = true)
-    public GrowthSimulationResponse getGrowthSimulation(Long simulationId) {
-        GrowthSimulation simulation = growthSimulationRepository.findById(simulationId)
-                .orElseThrow(() -> new IllegalArgumentException("GrowthSimulation not found: " + simulationId));
+    public GrowthSimulationResponse getGrowthSimulation(Long simulationId, Long userId) {
+        GrowthSimulation simulation = growthSimulationRepository
+                .findByIdAndUserAccount_Id(simulationId, userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "GrowthSimulation not found: " + simulationId
+                ));
 
         List<GrowthTimelineResponse> timeline = growthTimelineRepository
                 .findByGrowthSimulationIdOrderByDayAsc(simulationId)

@@ -46,6 +46,8 @@ public class GrowthSimulationController {
     public GrowthSimulationResponse getGrowthSimulation(
             @PathVariable Long simulationId
     ) {
-        return growthSimulationService.getGrowthSimulation(simulationId);
+        Long currentUserId = currentUserService.getCurrentUserId();
+
+        return growthSimulationService.getGrowthSimulation(simulationId, currentUserId);
     }
 }

@@ -246,6 +246,10 @@ async function runSimulationFromInput() {
             }),
         });
 
+        if (handleAuthError(response)) {
+            return;
+        }
+
         if (!response.ok) {
             throw new Error("Spring API request failed: " + response.status);
         }
@@ -459,6 +463,16 @@ async function loadGeneRules() {
             return;
         }
 
+        if (response.status === 401) {
+            alert("로그인 세션이 만료되었습니다. 다시 로그인해 주세요.");
+            logoutUser();
+            return;
+        }
+
+        if (handleForbiddenError(response, "Gene Rule 관리는 ADMIN 계정만 사용할 수 있습니다.")) {
+            return;
+        }
+
         if (!response.ok) {
             throw new Error("Failed to load gene rules: " + response.status);
         }
@@ -648,6 +662,10 @@ async function runGrowthSimulation() {
                 days: days,
             }),
         });
+
+        if (handleAuthError(response)) {
+            return;
+        }
 
         if (!response.ok) {
             throw new Error("Growth simulation request failed: " + response.status);
@@ -950,6 +968,16 @@ async function loadAdminSummary() {
         const response = await fetch("http://localhost:8080/api/admin/summary", {
             headers: buildAuthHeaders(),
         });
+
+        if (response.status === 401) {
+            alert("로그인 세션이 만료되었습니다. 다시 로그인해 주세요.");
+            logoutUser();
+            return;
+        }
+
+        if (handleForbiddenError(response, "Admin Dashboard는 ADMIN 계정만 사용할 수 있습니다.")) {
+            return;
+        }
 
         if (!response.ok) {
             throw new Error("Failed to load admin summary: " + response.status);
@@ -1677,6 +1705,25 @@ function buildJsonHeaders() {
     }
 
     return headers;
+}
+
+function handleAuthError(response) {
+    if (response.status === 401 || response.status === 403) {
+        alert("로그인 세션이 만료되었거나 토큰이 올바르지 않습니다. 다시 로그인해 주세요.");
+        logoutUser();
+        return true;
+    }
+
+    return false;
+}
+
+function handleForbiddenError(response, message) {
+    if (response.status === 403) {
+        alert(message || "이 기능을 사용할 권한이 없습니다.");
+        return true;
+    }
+
+    return false;
 }
 
 function renderAuthState() {

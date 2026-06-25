@@ -14,6 +14,7 @@ import com.yusolbin.bio_os.repository.UserAccountRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -195,6 +196,61 @@ public class GrowthSimulationService {
                 .toList();
 
         return new GrowthSimulationResponse(simulation, timeline);
+    }
+
+    @Transactional(readOnly = true)
+    public String exportGrowthSimulationCsv(Long simulationId, Long userId) {
+        GrowthSimulation simulation = growthSimulationRepository
+                .findByIdAndUserAccount_Id(simulationId, userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "GrowthSimulation not found: " + simulationId
+                ));
+
+        List<GrowthTimelineResponse> timeline = growthTimelineRepository
+                .findByGrowthSimulationIdOrderByDayAsc(simulationId)
+                .stream()
+                .map(GrowthTimelineResponse::new)
+                .toList();
+
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("simulationId,plantType,day,water,light,temperature,humidity,growthScore,totalEnergy,visualState,riskLevel,activeStates,matchedRules\n");
+
+        for (GrowthTimelineResponse row : timeline) {
+            builder.append(simulation.getId()).append(",");
+            builder.append(escapeCsv(simulation.getPlantType().getName())).append(",");
+            builder.append(row.getDay()).append(",");
+            builder.append(row.getWater()).append(",");
+            builder.append(row.getLight()).append(",");
+            builder.append(row.getTemperature()).append(",");
+            builder.append(row.getHumidity()).append(",");
+            builder.append(row.getGrowthScore()).append(",");
+            builder.append(row.getTotalEnergy()).append(",");
+            builder.append(escapeCsv(row.getVisualState())).append(",");
+            builder.append(escapeCsv(row.getRiskLevel())).append(",");
+            builder.append(escapeCsv(String.join("|", row.getActiveStates()))).append(",");
+            builder.append(escapeCsv(String.join("|", row.getMatchedRules()))).append("\n");
+        }
+
+        return builder.toString();
+    }
+
+    private String escapeCsv(String value) {
+        if (value == null) {
+            return "";
+        }
+
+        String escaped = value.replace("\"", "\"\"");
+
+        if (escaped.contains(",")
+                || escaped.contains("\"")
+                || escaped.contains("\n")
+                || escaped.contains("\r")) {
+            return "\"" + escaped + "\"";
+        }
+
+        return escaped;
     }
 
     private int normalizeDays(int days) {

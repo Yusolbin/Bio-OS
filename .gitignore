@@ -30,3 +30,7 @@ Release/
 .DS_Store
 Thumbs.db**/application.properties 
 backend/bio-os/data/
+
+backend/bio-os/data/
+deploy/windows/BIO-OS/data/
+deploy/windows/BIO-OS/backend/*.jar

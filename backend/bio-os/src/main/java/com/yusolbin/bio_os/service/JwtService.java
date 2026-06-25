@@ -1,7 +1,9 @@
 package com.yusolbin.bio_os.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yusolbin.bio_os.model.UserAccount;
+import com.yusolbin.bio_os.security.JwtUserPrincipal;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Mac;
@@ -11,6 +13,7 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class JwtService {
@@ -61,6 +64,55 @@ public class JwtService {
         }
     }
 
+    public Optional<JwtUserPrincipal> validateToken(String token) {
+        try {
+            if (token == null || token.isBlank()) {
+                return Optional.empty();
+            }
+
+            String[] parts = token.split("\\.");
+
+            if (parts.length != 3) {
+                return Optional.empty();
+            }
+
+            String unsignedToken = parts[0] + "." + parts[1];
+            String expectedSignature = sign(unsignedToken);
+            String actualSignature = parts[2];
+
+            if (!constantTimeEquals(expectedSignature, actualSignature)) {
+                return Optional.empty();
+            }
+
+            String payloadJson = new String(
+                    Base64.getUrlDecoder().decode(parts[1]),
+                    StandardCharsets.UTF_8
+            );
+
+            JsonNode payload = objectMapper.readTree(payloadJson);
+
+            long exp = payload.path("exp").asLong(0);
+            long now = Instant.now().getEpochSecond();
+
+            if (exp < now) {
+                return Optional.empty();
+            }
+
+            Long userId = payload.path("userId").asLong();
+            String username = payload.path("username").asText("");
+            String role = payload.path("role").asText("");
+
+            if (userId == null || username.isBlank() || role.isBlank()) {
+                return Optional.empty();
+            }
+
+            return Optional.of(new JwtUserPrincipal(userId, username, role));
+
+        } catch (Exception error) {
+            return Optional.empty();
+        }
+    }
+
     private String sign(String data) throws Exception {
         Mac mac = Mac.getInstance("HmacSHA256");
 
@@ -84,5 +136,26 @@ public class JwtService {
         return Base64.getUrlEncoder()
                 .withoutPadding()
                 .encodeToString(text.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private boolean constantTimeEquals(String left, String right) {
+        if (left == null || right == null) {
+            return false;
+        }
+
+        byte[] leftBytes = left.getBytes(StandardCharsets.UTF_8);
+        byte[] rightBytes = right.getBytes(StandardCharsets.UTF_8);
+
+        if (leftBytes.length != rightBytes.length) {
+            return false;
+        }
+
+        int result = 0;
+
+        for (int i = 0; i < leftBytes.length; i++) {
+            result |= leftBytes[i] ^ rightBytes[i];
+        }
+
+        return result == 0;
     }
 }

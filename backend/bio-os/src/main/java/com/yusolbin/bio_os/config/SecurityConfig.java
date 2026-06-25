@@ -1,5 +1,6 @@
 package com.yusolbin.bio_os.config;
 
+import com.yusolbin.bio_os.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -9,10 +10,22 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -27,22 +40,58 @@ public class SecurityConfig {
 
                         .requestMatchers("/").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/simulations/**").permitAll()
-                        .requestMatchers("/api/growth/**").permitAll()
-                        .requestMatchers("/api/plants/**").permitAll()
-                        .requestMatchers("/api/rules/**").permitAll()
-                        .requestMatchers("/api/admin/**").permitAll()
-                        .requestMatchers("/api/engine/cpp/**").permitAll()
 
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
 
-                        .anyRequest().permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/api/rules/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/rules/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/rules/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/rules/**").authenticated()
+
+                        .requestMatchers("/api/simulations/**").authenticated()
+                        .requestMatchers("/api/growth/**").authenticated()
+                        .requestMatchers("/api/plants/**").authenticated()
+                        .requestMatchers("/api/engine/cpp/**").authenticated()
+
+                        .anyRequest().authenticated()
                 )
                 .httpBasic(AbstractHttpConfigurer::disable)
-                .formLogin(AbstractHttpConfigurer::disable);
+                .formLogin(AbstractHttpConfigurer::disable)
+                .addFilterBefore(
+                        jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                );
 
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        return new CorsConfigurationSource() {
+            @Override
+            public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+                CorsConfiguration configuration = new CorsConfiguration();
+
+                configuration.setAllowedOriginPatterns(List.of("*"));
+                configuration.setAllowedMethods(List.of(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "PATCH",
+                        "DELETE",
+                        "OPTIONS"
+                ));
+                configuration.setAllowedHeaders(List.of("*"));
+                configuration.setExposedHeaders(List.of("Authorization"));
+                configuration.setAllowCredentials(false);
+                configuration.setMaxAge(3600L);
+
+                return configuration;
+            }
+        };
     }
 }

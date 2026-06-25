@@ -820,24 +820,9 @@ Growth Simulation Timeline을 CSV로 Export할 수 있습니다.
 
 ## 스크린샷
 
-아래 이미지는 BIO-OS의 주요 기능 흐름을 보여주는 화면입니다.
-
-> 이미지 파일은 프로젝트 루트 기준 `docs/images/` 폴더에 넣어두면 됩니다.
-
-```text
-docs/images/01-auth.png
-docs/images/02-simulation-dashboard.png
-docs/images/03-growth-simulation.png
-docs/images/04-csv-export.png
-docs/images/05-ai-prediction.png
-docs/images/06-admin-dashboard.png
-docs/images/07-admin-user-management.png
-```
-
 ### 1. Auth
 
-로그인과 회원가입을 담당하는 화면입니다.  
-로그인 성공 시 JWT Token이 발급되고, 이후 Web Dashboard 요청에 Authorization Header가 포함됩니다.
+로그인과 회원가입을 담당하는 인증 화면입니다. 로그인 성공 시 JWT Token을 발급받고 Web Dashboard로 이동합니다.
 
 ![Auth](docs/images/01-auth.png)
 
@@ -845,8 +830,7 @@ docs/images/07-admin-user-management.png
 
 ### 2. Simulation Dashboard
 
-물, 빛, 온도, 습도 값을 입력해 현재 식물 상태를 분석하는 화면입니다.  
-C++ Engine Bridge가 정상적으로 연결되면 `Engine Source`에 `CPP_SHARED_ENGINE_CLI`가 표시됩니다.
+물, 빛, 온도, 습도 값을 입력해 현재 식물 상태를 분석하는 화면입니다. C++ Engine과 연결된 경우 `Engine Source`에 `CPP_SHARED_ENGINE_CLI`가 표시됩니다.
 
 ![Simulation Dashboard](docs/images/02-simulation-dashboard.png)
 
@@ -854,8 +838,7 @@ C++ Engine Bridge가 정상적으로 연결되면 `Engine Source`에 `CPP_SHARED
 
 ### 3. Growth Simulation
 
-현재 환경값을 기반으로 며칠 뒤 식물의 성장 상태를 예측하는 화면입니다.  
-Growth Timeline Table과 Canvas Chart를 통해 날짜별 Growth Score, Energy, Risk Level 변화를 확인할 수 있습니다.
+선택한 Plant Type과 현재 환경값을 기반으로 N일 뒤 성장 변화를 예측하는 화면입니다. Growth Timeline과 Chart를 통해 Growth Score와 Energy 변화를 확인할 수 있습니다.
 
 ![Growth Simulation](docs/images/03-growth-simulation.png)
 
@@ -863,8 +846,7 @@ Growth Timeline Table과 Canvas Chart를 통해 날짜별 Growth Score, Energy, 
 
 ### 4. CSV Export
 
-저장된 Growth Simulation의 Timeline 데이터를 CSV 파일로 다운로드하는 기능입니다.  
-Export CSV 버튼을 통해 `growth_simulation_{simulationId}.csv` 형식의 파일을 받을 수 있습니다.
+저장된 Growth Simulation 결과를 CSV로 다운로드할 수 있습니다. Growth Timeline의 날짜별 환경값, 성장 점수, 위험도, 활성 상태, 매칭 규칙을 외부 파일로 확인할 수 있습니다.
 
 ![CSV Export](docs/images/04-csv-export.png)
 
@@ -872,29 +854,20 @@ Export CSV 버튼을 통해 `growth_simulation_{simulationId}.csv` 형식의 파
 
 ### 5. AI Prediction
 
-Simulation 또는 Growth Simulation 결과를 기반으로 생존 확률, 성장 가능성, 위험 점수, 추천 조치를 예측하는 화면입니다.
+Simulation 또는 Growth Simulation 결과를 기반으로 생존 확률, 성장 가능성, 위험 점수, 추천 조치, 위험 요인을 예측하는 화면입니다.
 
 ![AI Prediction](docs/images/05-ai-prediction.png)
 
 ---
 
-### 6. Admin Dashboard
+### 6. Admin Dashboard / User Management
 
-ADMIN 계정으로 전체 시스템 상태를 확인하는 화면입니다.  
-Simulation Log 수, Growth Simulation 수, User 수, 평균 환경값, Risk Distribution, Overall System Status, Admin Insights를 확인할 수 있습니다.
+ADMIN 계정에서 전체 시스템 통계와 사용자 목록을 확인하는 화면입니다. Admin Dashboard에서는 전체 로그 수, 성장 시뮬레이션 수, 평균 환경값, Risk Distribution, Overall System Status를 확인할 수 있고, User Management에서는 사용자 권한을 관리할 수 있습니다.
 
-![Admin Dashboard](docs/images/06-admin-dashboard.png)
-
----
-
-### 7. Admin User Management
-
-ADMIN 계정으로 전체 사용자 목록을 확인하고, 사용자 권한을 변경할 수 있는 화면입니다.  
-자기 자신의 권한 변경은 막혀 있으며, USER / ADMIN Role Update가 가능합니다.
-
-![Admin User Management](docs/images/07-admin-user-management.png)
+![Admin Dashboard and User Management](docs/images/07-admin-user-management.png)
 
 ---
+
 
 ## 현재 한계
 

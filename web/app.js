@@ -84,6 +84,7 @@ const adminGeneRuleCount = document.getElementById("adminGeneRuleCount");
 const adminSimulationLogCount = document.getElementById("adminSimulationLogCount");
 const adminGrowthSimulationCount = document.getElementById("adminGrowthSimulationCount");
 const adminUserCount = document.getElementById("adminUserCount");
+const adminUserTable = document.getElementById("adminUserTable");
 const adminAverageGrowthScore = document.getElementById("adminAverageGrowthScore");
 
 const adminAverageWater = document.getElementById("adminAverageWater");
@@ -162,8 +163,9 @@ exportGrowthCsvButton.addEventListener("click", () => {
     exportCurrentGrowthSimulationCsv();
 });
 
-loadAdminSummaryButton.addEventListener("click", () => {
-    loadAdminSummary();
+loadAdminSummaryButton.addEventListener("click", async () => {
+    await loadAdminSummary();
+    await loadAdminUsers();
 });
 
 logoutButton.addEventListener("click", () => {
@@ -991,6 +993,87 @@ async function loadAdminSummary() {
         console.error(error);
         alert("Admin Summary 조회에 실패했습니다. Spring Boot 서버가 켜져 있는지 확인해 주세요.");
     }
+}
+
+async function loadAdminUsers() {
+    if (!isAdminUser()) {
+        alert("User Management는 ADMIN 계정만 사용할 수 있습니다.");
+        showDashboardMessage("ADMIN role required for User Management.");
+        return;
+    }
+
+    try {
+        const response = await fetch("http://localhost:8080/api/admin/users", {
+            headers: buildAuthHeaders(),
+        });
+
+        if (response.status === 401) {
+            alert("로그인 세션이 만료되었습니다. 다시 로그인해 주세요.");
+            logoutUser();
+            return;
+        }
+
+        if (response.status === 403) {
+            alert("User Management는 ADMIN 계정만 사용할 수 있습니다.");
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error("Failed to load admin users: " + response.status);
+        }
+
+        const users = await response.json();
+
+        renderAdminUsers(users);
+
+    } catch (error) {
+        console.error(error);
+        alert("User Management 조회에 실패했습니다. Spring Boot 서버가 켜져 있는지 확인해 주세요.");
+    }
+}
+
+function renderAdminUsers(users) {
+    if (!adminUserTable) {
+        return;
+    }
+
+    adminUserTable.innerHTML = "";
+
+    if (!users || users.length === 0) {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td colspan="4">No users loaded.</td>
+        `;
+
+        adminUserTable.appendChild(row);
+        return;
+    }
+
+    users.forEach((user) => {
+        const row = document.createElement("tr");
+
+        const roleClass = user.role === "ADMIN"
+            ? "risk-badge risk-medium"
+            : "risk-badge risk-low";
+
+        row.innerHTML = `
+            <td>${user.userId}</td>
+            <td>${user.username}</td>
+            <td><span class="${roleClass}">${user.role}</span></td>
+            <td>${formatDateTime(user.createdAt)}</td>
+        `;
+
+        adminUserTable.appendChild(row);
+    });
+}
+
+function formatDateTime(value) {
+    if (!value) {
+        return "-";
+    }
+
+    return String(value).replace("T", " ").slice(0, 19);
 }
 
 function renderAdminSummary(summary) {
@@ -1836,6 +1919,7 @@ renderAuthState();
 if (isAdminUser()) {
     loadGeneRules();
     loadAdminSummary();
+    loadAdminUsers();
 } else if (ruleList) {
     ruleList.innerHTML = "";
 

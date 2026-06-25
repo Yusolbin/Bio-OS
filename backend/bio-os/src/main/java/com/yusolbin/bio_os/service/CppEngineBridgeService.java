@@ -3,6 +3,7 @@ package com.yusolbin.bio_os.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yusolbin.bio_os.dto.CppEngineResult;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -18,9 +19,14 @@ import java.util.List;
 public class CppEngineBridgeService {
 
     private final ObjectMapper objectMapper;
+    private final String configuredEnginePath;
 
-    public CppEngineBridgeService(ObjectMapper objectMapper) {
+    public CppEngineBridgeService(
+            ObjectMapper objectMapper,
+            @Value("${bio-os.engine.path:}") String configuredEnginePath
+    ) {
         this.objectMapper = objectMapper;
+        this.configuredEnginePath = configuredEnginePath;
     }
 
     public CppEngineResult runEngine(
@@ -103,6 +109,14 @@ public class CppEngineBridgeService {
     }
 
     private Path resolveEnginePath() {
+        if (configuredEnginePath != null && !configuredEnginePath.isBlank()) {
+            Path configuredPath = Paths.get(configuredEnginePath).toAbsolutePath().normalize();
+
+            if (Files.exists(configuredPath)) {
+                return configuredPath;
+            }
+        }
+
         Path currentPath = Paths.get("").toAbsolutePath();
 
         Path fromBackendPath = currentPath
@@ -119,6 +133,10 @@ public class CppEngineBridgeService {
 
         if (Files.exists(fromRootPath)) {
             return fromRootPath;
+        }
+
+        if (configuredEnginePath != null && !configuredEnginePath.isBlank()) {
+            return Paths.get(configuredEnginePath).toAbsolutePath().normalize();
         }
 
         return fromBackendPath;

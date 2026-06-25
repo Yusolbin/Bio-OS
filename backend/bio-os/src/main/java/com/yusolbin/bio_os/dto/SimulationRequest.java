@@ -6,7 +6,6 @@ public class SimulationRequest {
     private double light;
     private double temperature;
     private double humidity;
-
     private Long userId;
 
     public SimulationRequest() {
@@ -44,11 +43,11 @@ public class SimulationRequest {
         this.humidity = humidity;
     }
 
-    public Long getUserId(){
+    public Long getUserId() {
         return userId;
     }
 
-    public void setUserAccount(Long userId){
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 }

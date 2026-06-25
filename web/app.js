@@ -179,7 +179,7 @@ async function clearSimulationLogs() {
 
     try {
         const response = await fetch(
-            `http://localhost:8080/api/simulations/logs?userId=${currentUser.userId}`,
+            "http://localhost:8080/api/simulations/logs",
             {
                 method: "DELETE",
                 headers: buildAuthHeaders(),
@@ -233,7 +233,6 @@ async function runSimulationFromInput() {
             method: "POST",
             headers: buildJsonHeaders(),
             body: JSON.stringify({
-                userId: currentUser.userId,
                 water: water,
                 light: light,
                 temperature: temperature,
@@ -334,7 +333,7 @@ async function loadSimulationLogs() {
 
     try {
         const response = await fetch(
-            `http://localhost:8080/api/simulations/logs?userId=${currentUser.userId}`,
+            "http://localhost:8080/api/simulations/logs",
             {
                 headers: buildAuthHeaders(),
             }
@@ -611,7 +610,6 @@ async function runGrowthSimulation() {
             method: "POST",
             headers: buildJsonHeaders(),
             body: JSON.stringify({
-                userId: currentUser.userId,
                 plantTypeId: plantTypeId,
                 water: Number(waterInput.value),
                 light: Number(lightInput.value),
@@ -644,7 +642,7 @@ async function loadGrowthSimulations() {
 
     try {
         const response = await fetch(
-            `http://localhost:8080/api/growth/simulations?userId=${currentUser.userId}`,
+            "http://localhost:8080/api/growth/simulations",
             {
                 headers: buildAuthHeaders(),
             }

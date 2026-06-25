@@ -22,6 +22,14 @@ public class GrowthSimulationRequest {
         this.plantTypeId = plantTypeId;
     }
 
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
     public double getWater() {
         return water;
     }
@@ -60,13 +68,5 @@ public class GrowthSimulationRequest {
 
     public void setDays(int days) {
         this.days = days;
-    }
-
-    public Long getUserId(){
-        return userId;
-    }
-
-    public void setUserId(Long userId){
-        this.userId = userId;
     }
 }

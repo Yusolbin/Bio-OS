@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BIO-OS Web Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+<div class="app">
+    <header class="hero">
+        <div>
+            <p class="eyebrow">BIO-OS v0.4 Dashboard</p>
+            <h1>Algorithmic Bio-System Simulator</h1>
+            <p class="subtitle">
+                C++ 엔진의 생체 상태 데이터를 Spring Boot API, MySQL, Web Dashboard와 연결하여
+                식물 상태 변화와 성장 예측, 사용자별 기록, 관리자 통계를 시각적으로 분석하는
+                풀스택 시뮬레이션 대시보드입니다.
+            </p>
+        </div>
+    </header>
+
+    <section class="session-bar">
+
+        <div id="authGuardMessage" class="auth-guard-message auth-guard-locked">
+            Checking login state...
+        </div>
+
+        <button id="logoutButton" class="danger">Logout</button>
+    </section>
+
+    <main class="grid">
+        <section class="card control-panel">
+            <h2>Environment Input</h2>
+
+            <label>
+                Water Input
+                <input id="waterInput" type="number" value="15" min="0" max="200" />
+            </label>
+
+            <label>
+                Light
+                <input id="lightInput" type="number" value="80" min="0" max="100" />
+            </label>
+
+            <label>
+                Temperature
+                <input id="temperatureInput" type="number" value="32" min="-10" max="60" />
+            </label>
+
+            <label>
+                Humidity
+                <input id="humidityInput" type="number" value="60" min="0" max="100" />
+            </label>
+
+            <button id="runButton">Run Simulation</button>
+            <button id="randomButton" class="secondary">Random Sample</button>
+            <button id="loadLogsButton" class="secondary">Load DB Logs</button>
+            <button id="resetButton" class="danger">Clear Logs</button>
+        </section>
+
+        <section class="card growth-control-card">
+            <h2>Growth Simulation Mode</h2>
+            <p class="section-desc">
+                현재 환경값을 기반으로 선택한 식물의 N일 뒤 성장 변화를 예측합니다.
+            </p>
+
+            <label>
+                Plant Type
+                <select id="plantTypeSelect">
+                    <option value="">Loading plant types...</option>
+                </select>
+            </label>
+
+            <label>
+                Simulation Days
+                <input id="growthDaysInput" type="number" value="30" min="1" max="365" />
+            </label>
+
+            <button id="runGrowthButton">Run Growth Simulation</button>
+            <button id="loadGrowthSimulationsButton" class="secondary">Load Growth Simulations</button>
+        </section>
+
+        <section class="card">
+            <div class="card-header">
+                <div>
+                    <h2>AI Prediction</h2>
+                    <p>Predict survival probability, growth potential, and risk score from current BIO-OS data.</p>
+                </div>
+                <button id="runAiPredictionButton" class="primary">Run AI Prediction</button>
+            </div>
+
+            <div class="metric-grid">
+                <div class="metric-row">
+                    <span>Prediction Label</span>
+                    <strong id="aiPredictionLabel">-</strong>
+                </div>
+                <div class="metric-row">
+                    <span>Survival Probability</span>
+                    <strong id="aiSurvivalProbability">-</strong>
+                </div>
+                <div class="metric-row">
+                    <span>Growth Potential</span>
+                    <strong id="aiGrowthPotential">-</strong>
+                </div>
+                <div class="metric-row">
+                    <span>Risk Score</span>
+                    <strong id="aiRiskScore">-</strong>
+                </div>
+                <div class="metric-row">
+                    <span>Confidence Score</span>
+                    <strong id="aiConfidenceScore">-</strong>
+                </div>
+                <div class="metric-row">
+                    <span>Engine Source</span>
+                    <strong id="aiEngineSource">-</strong>
+                </div>
+            </div>
+
+            <h3>Recommended Action</h3>
+            <pre id="aiRecommendedActionBox">No AI prediction yet.</pre>
+
+            <h3>Prediction Reason</h3>
+            <pre id="aiReasonBox">No reason generated yet.</pre>
+
+            <h3>Risk Factors</h3>
+            <pre id="aiRiskFactorsBox">No risk factors detected.</pre>
+        </section>
+
+        <section id="adminDashboardCard" class="card admin-card">
+            <h2>Admin Dashboard</h2>
+            <p class="section-desc">
+                전체 시뮬레이션 데이터와 성장 예측 통계를 요약합니다.
+            </p>
+
+            <button id="loadAdminSummaryButton" class="secondary">Load Admin Summary</button>
+
+            <div class="admin-status-panel">
+                <span>Overall System Status</span>
+                <strong id="adminOverallStatus" class="admin-status-info">INFO</strong>
+            </div>
+
+            <div class="admin-grid">
+                <div>
+                    <span>Plant Types</span>
+                    <strong id="adminPlantTypeCount">0</strong>
+                </div>
+
+                <div>
+                    <span>Gene Rules</span>
+                    <strong id="adminGeneRuleCount">0</strong>
+                </div>
+
+                <div>
+                    <span>Simulation Logs</span>
+                    <strong id="adminSimulationLogCount">0</strong>
+                </div>
+
+                <div>
+                    <span>Growth Simulations</span>
+                    <strong id="adminGrowthSimulationCount">0</strong>
+                </div>
+
+                <div>
+                    <span>Users</span>
+                    <strong id="adminUserCount">0</strong>
+                </div>
+
+                <div>
+                    <span>Average Growth Score</span>
+                    <strong id="adminAverageGrowthScore">0.0</strong>
+                </div>
+
+                <div>
+                    <span>Average Water</span>
+                    <strong id="adminAverageWater">0.0</strong>
+                </div>
+
+                <div>
+                    <span>Average Light</span>
+                    <strong id="adminAverageLight">0.0</strong>
+                </div>
+
+                <div>
+                    <span>Average Temperature</span>
+                    <strong id="adminAverageTemperature">0.0</strong>
+                </div>
+
+                <div>
+                    <span>Average Humidity</span>
+                    <strong id="adminAverageHumidity">0.0</strong>
+                </div>
+
+                <div>
+                    <span>Latest Plant</span>
+                    <strong id="adminLatestPlantType">-</strong>
+                </div>
+
+                <div>
+                    <span>Latest Risk</span>
+                    <strong id="adminLatestRiskLevel" class="risk-badge risk-low">-</strong>
+                </div>
+
+                <div>
+                    <span>Latest Visual</span>
+                    <strong id="adminLatestVisualState">-</strong>
+                </div>
+            </div>
+
+            <h3>User Management</h3>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminUserTable">
+                        <tr>
+                            <td colspan="5">No users loaded.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Risk Distribution</h3>
+            <pre id="adminRiskDistributionBox">No admin data loaded.</pre>
+
+            <h3>Risk Distribution Chart</h3>
+            <div class="admin-chart-wrap">
+                <canvas id="adminRiskChartCanvas" width="520" height="240"></canvas>
+            </div>
+
+            <h3>Environment Average Chart</h3>
+            <div class="admin-chart-wrap">
+                <canvas id="adminEnvironmentChartCanvas" width="520" height="240"></canvas>
+            </div>
+
+            <h3>Admin Insights</h3>
+            <div id="adminInsightList" class="admin-insight-list">
+                <p>No admin insights loaded.</p>
+            </div>
+        </section>
+
+        <section class="card rule-panel">
+            <h2>Gene Rule Input</h2>
+
+            <div class="rule-row">
+                <span>IF</span>
+
+                <select id="ruleField">
+                    <option value="Water">Water</option>
+                    <option value="Light">Light</option>
+                    <option value="Temperature">Temperature</option>
+                </select>
+
+                <select id="ruleOperator">
+                    <option value="LT">&lt;</option>
+                    <option value="GT">&gt;</option>
+                    <option value="LTE">&lt;=</option>
+                    <option value="GTE">&gt;=</option>
+                </select>
+
+                <input id="ruleThreshold" type="number" value="30" />
+
+                <span>THEN</span>
+
+                <input id="ruleState" type="text" value="DroughtMode" />
+
+                <span>= ON</span>
+            </div>
+
+            <div class="effect-row">
+                <label for="ruleEnergyEffect">Energy Effect</label>
+                <input id="ruleEnergyEffect" type="number" value="-30" />
+            </div>
+
+            <button id="addRuleButton" class="secondary">Save Rule</button>
+
+            <div class="rule-list">
+                <div class="section-header">
+                    <div>
+                        <h3>Gene Rule Registry</h3>
+                        <p>Rules are stored in MySQL and applied during simulation.</p>
+                    </div>
+                </div>
+
+                <ul id="ruleList"></ul>
+            </div>
+        </section>
+
+        <section class="card plant-card">
+            <h2>Plant Pixel View</h2>
+
+            <div class="plant-stage">
+                <img id="plantImage" src="assets/stable.png" alt="Plant State" />
+            </div>
+
+            <p id="visualState" class="visual-state">Current Visual State: stable</p>
+        </section>
+
+        <section class="card result-card">
+            <h2>Simulation Result</h2>
+
+            <div class="result-grid">
+                <div>
+                    <span>Tick</span>
+                    <strong id="tickValue">0</strong>
+                </div>
+
+                <div>
+                    <span>Water</span>
+                    <strong id="waterValue">0.0</strong>
+                </div>
+
+                <div>
+                    <span>Light</span>
+                    <strong id="lightValue">0.0</strong>
+                </div>
+
+                <div>
+                    <span>Temperature</span>
+                    <strong id="temperatureValue">0.0</strong>
+                </div>
+
+                <div>
+                    <span>Humidity</span>
+                    <strong id="humidityValue">60.0</strong>
+                </div>
+
+                <div>
+                    <span>Total Energy</span>
+                    <strong id="energyValue">100.0</strong>
+                </div>
+
+                <div>
+                    <span>Energy Delta</span>
+                    <strong id="energyDeltaValue">0.0</strong>
+                </div>
+
+                <div>
+                    <span>Risk Level</span>
+                    <strong id="riskLevelValue" class="risk-badge risk-low">LOW</strong>
+                </div>
+
+                <div class="metric-row">
+                    <span>Engine Source</span>
+                    <string id="engineSourceText">-</string>
+                </div>
+
+                <div>
+                    <span>Last Action</span>
+                    <strong id="lastActionValue">None</strong>
+                </div>
+
+                <div>
+                    <span>Visual State</span>
+                    <strong id="visualStateValue">stable</strong>
+                </div>
+            </div>
+
+            <h3>Active States</h3>
+            <pre id="activeStatesBox">No active states.</pre>
+
+            <h3>Matched Rules</h3>
+            <pre id="matchedRulesBox">No matched rules.</pre>
+
+            <h3>Recommendation</h3>
+            <pre id="recommendationBox">Press Run Simulation to start BIO-OS analysis.</pre>
+        </section>
+
+        <section class="card growth-result-card">
+            <h2>Growth Simulation Result</h2>
+
+            <div class="result-grid">
+                <div>
+                    <span>Plant Type</span>
+                    <strong id="growthPlantTypeValue">-</strong>
+                </div>
+
+                <div>
+                    <span>Days</span>
+                    <strong id="growthDaysValue">0</strong>
+                </div>
+
+                <div>
+                    <span>Current Growth Score</span>
+                    <strong id="growthScoreValue">0.0</strong>
+                </div>
+
+                <div>
+                    <span>Current Risk Level</span>
+                    <strong id="growthRiskValue" class="risk-badge risk-low">LOW</strong>
+                </div>
+
+                <div>
+                    <span>Current Visual State</span>
+                    <strong id="growthVisualValue">stable</strong>
+                </div>
+
+                <div>
+                    <span>Current Day</span>
+                    <strong id="growthCurrentDayValue">-</strong>
+                </div>
+            </div>
+
+            <h3>Growth Summary</h3>
+            <pre id="growthSummaryBox">Run Growth Simulation to predict plant growth.</pre>
+
+            <div class="timeline-controls">
+                <button id="playTimelineButton" class="secondary">Play Timeline</button>
+                <button id="pauseTimelineButton" class="secondary">Pause</button>
+                <button id="resetTimelineButton" class="secondary">Reset</button>
+                <button id="exportGrowthCsvButton" class="secondary" disabled>Export CSV</button>
+            </div>
+
+            <h3>Growth Chart</h3>
+            <div class="growth-chart-wrap">
+                <canvas id="growthChartCanvas" width="760" height="260"></canvas>
+            </div>
+
+            <h3>Growth Timeline</h3>
+            <div class="timeline-table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Day</th>
+                        <th>Growth</th>
+                        <th>Energy</th>
+                        <th>Risk</th>
+                        <th>Visual</th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="growthTimelineTable"></tbody>
+                </table>
+            </div>
+
+            <h3>Saved Growth Simulation</h3>
+            <div class="timeline-table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Plant</th>
+                        <th>Days</th>
+                        <th>Score</th>
+                        <th>Risk</th>
+                        <th>Visual</th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="growthHistoryTable"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="card log-card">
+            <h2>Tick History</h2>
+
+            <table>
+                <thead>
+                <tr>
+                    <th>Tick</th>
+                    <th>Water</th>
+                    <th>Light</th>
+                    <th>Temp</th>
+                    <th>Humidity</th>
+                    <th>Energy</th>
+                    <th>Action</th>
+                    <th>Visual</th>
+                </tr>
+                </thead>
+
+                <tbody id="historyTable"></tbody>
+            </table>
+        </section>
+    </main>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

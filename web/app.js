@@ -1,5 +1,6 @@
 let currentGrowthTimeline = [];
 let currentGrowthDayIndex = 0;
+let currentGrowthSimulationId = null;
 let timelineTimer = null;
 let currentUser = loadCurrentUser();
 
@@ -74,6 +75,7 @@ const growthChartContext = growthChartCanvas ? growthChartCanvas.getContext("2d"
 const playTimelineButton = document.getElementById("playTimelineButton");
 const pauseTimelineButton = document.getElementById("pauseTimelineButton");
 const resetTimelineButton = document.getElementById("resetTimelineButton");
+const exportGrowthCsvButton = document.getElementById("exportGrowthCsvButton");
 
 const loadAdminSummaryButton = document.getElementById("loadAdminSummaryButton");
 
@@ -154,6 +156,10 @@ pauseTimelineButton.addEventListener("click", () => {
 
 resetTimelineButton.addEventListener("click", () => {
     resetGrowthTimeline();
+});
+
+exportGrowthCsvButton.addEventListener("click", () => {
+    exportCurrentGrowthSimulationCsv();
 });
 
 loadAdminSummaryButton.addEventListener("click", () => {
@@ -699,6 +705,8 @@ function renderGrowthSimulationHistory(simulations) {
 
 async function loadGrowthSimulationDetail(simulationId) {
     try {
+        currentGrowthSimulationId = simulationId;
+
         const response = await fetch(`http://localhost:8080/api/growth/simulations/${simulationId}`, {
             headers: buildAuthHeaders(),
         });
@@ -718,11 +726,53 @@ async function loadGrowthSimulationDetail(simulationId) {
     }
 }
 
+async function exportCurrentGrowthSimulationCsv() {
+    if (!currentGrowthSimulationId) {
+        alert("먼저 Saved Growth Simulation을 선택해 주세요.");
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `http://localhost:8080/api/growth/simulations/${currentGrowthSimulationId}/csv`,
+            {
+                headers: buildAuthHeaders(),
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error("Failed to export growth simulation CSV: " + response.status);
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `growth_simulation_${currentGrowthSimulationId}.csv`;
+
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        window.URL.revokeObjectURL(url);
+
+    } catch (error) {
+        console.error(error);
+        alert("CSV Export에 실패했습니다.");
+    }
+}
+
 function renderGrowthResult(result) {
     pauseGrowthTimeline();
 
     currentGrowthTimeline = result.timeline || [];
     currentGrowthDayIndex = 0;
+    currentGrowthSimulationId = result.simulationId || result.id || currentGrowthSimulationId;
+
+    if (exportGrowthCsvButton) {
+        exportGrowthCsvButton.disabled = !currentGrowthSimulationId;
+    }
 
     growthPlantTypeValue.textContent = result.plantType || "-";
     growthDaysValue.textContent = result.days ?? currentGrowthTimeline.length;

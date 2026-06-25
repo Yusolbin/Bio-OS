@@ -44,6 +44,14 @@ Web Dashboard Visualization
 * CSV Export / Download
 * AI Prediction Dashboard
 
+**실행 및 배포 상태**
+현재 BIO-OS v1.0은 로컬 실행 기반의 포트폴리오 릴리즈입니다.
+
+Spring Boot Backend, MySQL, C++ Engine, Web Dashboard를 로컬 환경에서 함께 실행하는 구조로 구성되어 있습니다.
+C++ Engine은 현재 Windows 환경에서 빌드한 CLI 실행 파일을 Spring Boot Backend가 호출하는 방식으로 연결되어 있습니다.
+
+향후 개선 버전에서는 Docker Compose 기반 실행 환경과 Linux 배포용 C++ Engine 빌드 구성을 추가할 예정입니다.
+
 ---
 
 ## 기술 스택
@@ -609,6 +617,22 @@ Bio_OS
 ## 실행 방법
 
 ## 1. 사전 준비
+
+현재 버전은 로컬 실행을 기준으로 합니다.
+
+BIO-OS는 Frontend만 단독으로 실행되는 프로젝트가 아니라, MySQL Database, Spring Boot Backend, C++ Engine, Web Dashboard가 함께 동작해야 합니다.
+
+따라서 실행 순서는 다음과 같습니다.
+
+```text
+1. MySQL 실행 및 bio_os 데이터베이스 생성
+2. application.properties 설정
+3. C++ Engine 빌드
+4. Spring Boot Backend 실행
+5. Web Dashboard 실행
+6. ADMIN / USER 계정 생성 후 기능 테스트
+```
+
 
 다음 환경이 필요합니다.
 

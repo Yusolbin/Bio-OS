@@ -44,13 +44,16 @@ Web Dashboard Visualization
 * CSV Export / Download
 * AI Prediction Dashboard
 
-**실행 및 배포 상태**
-현재 BIO-OS v1.0은 로컬 실행 기반의 포트폴리오 릴리즈입니다.
+## Windows Demo Installer
 
-Spring Boot Backend, MySQL, C++ Engine, Web Dashboard를 로컬 환경에서 함께 실행하는 구조로 구성되어 있습니다.
-C++ Engine은 현재 Windows 환경에서 빌드한 CLI 실행 파일을 Spring Boot Backend가 호출하는 방식으로 연결되어 있습니다.
+BIO-OS는 Windows 설치형 데모 버전을 제공합니다.
 
-향후 개선 버전에서는 Docker Compose 기반 실행 환경과 Linux 배포용 C++ Engine 빌드 구성을 추가할 예정입니다.
+GitHub Releases에서 `BIO-OS-Setup.exe`를 다운로드해 설치하면, 별도의 MySQL 설정 없이 H2 Demo Mode로 실행할 수 있습니다.
+
+- Release: [BIO-OS v1.0 Portfolio Release](https://github.com/Yusolbin/Bio-OS/releases)
+- Installer: `BIO-OS-Setup.exe`
+
+설치 후 바탕화면의 BIO-OS 바로가기를 실행하면 Spring Boot Backend가 실행되고 Web Dashboard가 열립니다.
 
 ---
 
@@ -618,12 +621,33 @@ Bio_OS
 
 ## 1. 사전 준비
 
-현재 버전은 로컬 실행을 기준으로 합니다.
+## 실행 방법
 
-BIO-OS는 Frontend만 단독으로 실행되는 프로젝트가 아니라, MySQL Database, Spring Boot Backend, C++ Engine, Web Dashboard가 함께 동작해야 합니다.
+BIO-OS는 두 가지 방식으로 실행할 수 있습니다.
 
-따라서 실행 순서는 다음과 같습니다.
+```text
+1. Windows Demo Installer
+   - 포트폴리오 데모용
+   - H2 File Database 사용
+   - 별도 MySQL 설정 없이 실행 가능
 
+2. Local Development Mode
+   - 개발용
+   - MySQL 사용
+   - Backend / Engine / Web을 직접 실행
+```
+
+**Windows Demo Installer**
+```text
+GitHub Releases에서 BIO-OS-Setup.exe를 다운로드합니다.
+설치 파일을 실행합니다.
+설치 중 Create a desktop shortcut을 선택합니다.
+설치 완료 후 바탕화면의 BIO-OS 바로가기를 실행합니다.
+브라우저에서 로그인 화면이 열리면 첫 번째 계정을 생성합니다.
+첫 번째 계정은 ADMIN 권한을 가집니다.
+```
+
+**Local Development Mode**
 ```text
 1. MySQL 실행 및 bio_os 데이터베이스 생성
 2. application.properties 설정

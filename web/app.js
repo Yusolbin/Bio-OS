@@ -1043,7 +1043,7 @@ function renderAdminUsers(users) {
         const row = document.createElement("tr");
 
         row.innerHTML = `
-            <td colspan="4">No users loaded.</td>
+            <td colspan="5">No users loaded.</td>
         `;
 
         adminUserTable.appendChild(row);
@@ -1057,15 +1057,78 @@ function renderAdminUsers(users) {
             ? "risk-badge risk-medium"
             : "risk-badge risk-low";
 
+        const isCurrentUser = currentUser && Number(currentUser.userId) === Number(user.userId);
+        const nextRole = user.role === "ADMIN" ? "USER" : "ADMIN";
+        const actionLabel = user.role === "ADMIN" ? "Make USER" : "Make ADMIN";
+
         row.innerHTML = `
             <td>${user.userId}</td>
             <td>${user.username}</td>
             <td><span class="${roleClass}">${user.role}</span></td>
             <td>${formatDateTime(user.createdAt)}</td>
+            <td></td>
         `;
 
+        const actionCell = row.querySelector("td:last-child");
+
+        const roleButton = document.createElement("button");
+        roleButton.className = "mini-button toggle-button";
+        roleButton.textContent = isCurrentUser ? "Current User" : actionLabel;
+        roleButton.disabled = isCurrentUser;
+        roleButton.classList.toggle("disabled-button", isCurrentUser);
+
+        roleButton.addEventListener("click", () => {
+            updateAdminUserRole(user.userId, nextRole);
+        });
+
+        actionCell.appendChild(roleButton);
         adminUserTable.appendChild(row);
     });
+}
+
+async function updateAdminUserRole(userId, role) {
+    if (!isAdminUser()) {
+        alert("User Role 관리는 ADMIN 계정만 사용할 수 있습니다.");
+        return;
+    }
+
+    const confirmed = confirm(`이 사용자의 권한을 ${role}(으)로 변경하시겠습니까?`);
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:8080/api/admin/users/${userId}/role`, {
+            method: "PATCH",
+            headers: buildJsonHeaders(),
+            body: JSON.stringify({
+                role: role,
+            }),
+        });
+
+        if (response.status === 401) {
+            alert("로그인 세션이 만료되었습니다. 다시 로그인해 주세요.");
+            logoutUser();
+            return;
+        }
+
+        if (response.status === 403) {
+            alert("User Role 관리는 ADMIN 계정만 사용할 수 있습니다.");
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error("Failed to update user role: " + response.status);
+        }
+
+        await loadAdminUsers();
+        await loadAdminSummary();
+
+    } catch (error) {
+        console.error(error);
+        alert("User Role 변경에 실패했습니다.");
+    }
 }
 
 function formatDateTime(value) {
